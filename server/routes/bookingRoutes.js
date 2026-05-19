@@ -1,7 +1,7 @@
 import express from 'express';
 import {
   createBooking,
-  listTenantBookings,
+  listUserBookings,
   listAllBookings,
 } from '../controllers/bookingController.js';
 
@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.post('/', createBooking);
 router.get('/', listAllBookings);
-router.get('/tenant/:uid', listTenantBookings);
+router.get('/user/:userId', listUserBookings);
 
 export default router;

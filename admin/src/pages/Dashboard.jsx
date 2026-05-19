@@ -26,8 +26,8 @@ export default function Dashboard() {
     try {
       const { data } = await getAnalytics(periodParamMap[period]);
       setStats(data.data.stats);
-      setRecentProperties(data.data.recentHostels || []);
-      setRecentOwners(data.data.recentOwners || []);
+      setRecentProperties(data.data.recentProperties || []);
+      setRecentOwners(data.data.recentLandlords || []);
     } catch (err) {
       console.error('Failed to load analytics:', err);
     } finally {
@@ -60,16 +60,16 @@ export default function Dashboard() {
   const statCards = [
     {
       label: 'Total Properties',
-      value: stats?.totalHostels ?? '—',
+      value: stats?.totalProperties ?? '—',
       icon: 'apartment',
       iconColor: 'text-indigo-500 bg-indigo-50',
-      trend: `${stats?.approvedHostels ?? 0} approved`,
+      trend: `${stats?.approvedProperties ?? 0} approved`,
       trendLabel: 'currently active',
       trendUp: true,
     },
     {
       label: 'Pending Approval',
-      value: (stats?.pendingHostels ?? 0) + (stats?.pendingReviewHostels ?? 0),
+      value: (stats?.pendingProperties ?? 0) + (stats?.pendingReviewProperties ?? 0),
       valueColor: 'text-amber-600',
       icon: 'pending_actions',
       iconColor: 'text-amber-500 bg-amber-50',
@@ -80,7 +80,7 @@ export default function Dashboard() {
     },
     {
       label: 'Landlords',
-      value: stats?.totalOwners ?? '—',
+      value: stats?.totalLandlords ?? '—',
       icon: 'person',
       iconColor: 'text-indigo-500 bg-indigo-50',
       trend: '',
@@ -106,15 +106,15 @@ export default function Dashboard() {
     },
   ];
 
-  const total = stats?.totalHostels || 1;
-  const approvedPct = Math.round(((stats?.approvedHostels || 0) / total) * 100);
-  const pendingPct = Math.round(((stats?.pendingHostels || 0) / total) * 100);
-  const rejectedPct = Math.round(((stats?.rejectedHostels || 0) / total) * 100);
+  const total = stats?.totalProperties || 1;
+  const approvedPct = Math.round(((stats?.approvedProperties || 0) / total) * 100);
+  const pendingPct = Math.round(((stats?.pendingProperties || 0) / total) * 100);
+  const rejectedPct = Math.round(((stats?.rejectedProperties || 0) / total) * 100);
 
   const statusLegend = [
-    { color: 'bg-emerald-500', label: 'Approved', value: `${stats?.approvedHostels ?? 0} (${approvedPct}%)` },
-    { color: 'bg-amber-500', label: 'Pending', value: `${stats?.pendingHostels ?? 0} (${pendingPct}%)` },
-    { color: 'bg-rose-500', label: 'Rejected', value: `${stats?.rejectedHostels ?? 0} (${rejectedPct}%)` },
+    { color: 'bg-emerald-500', label: 'Approved', value: `${stats?.approvedProperties ?? 0} (${approvedPct}%)` },
+    { color: 'bg-amber-500', label: 'Pending', value: `${stats?.pendingProperties ?? 0} (${pendingPct}%)` },
+    { color: 'bg-rose-500', label: 'Rejected', value: `${stats?.rejectedProperties ?? 0} (${rejectedPct}%)` },
   ];
 
   const getStatusIcon = (status) => {
@@ -235,7 +235,7 @@ export default function Dashboard() {
                     })}
                   </svg>
                   <div className="absolute text-center pointer-events-none">
-                    <p className="text-3xl font-black">{stats?.totalHostels?.toLocaleString() ?? '0'}</p>
+                    <p className="text-3xl font-black">{stats?.totalProperties?.toLocaleString() ?? '0'}</p>
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Total</p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        &quot;{property.name}&quot;{property.owner ? ` by ${property.owner.name}` : ''} · {property.city}
+                        &quot;{property.title}&quot;{property.owner ? ` by ${property.owner.name}` : ''} · {property.city}
                       </p>
                       {(property.status === 'PENDING' || property.status === 'PENDING_REVIEW') && (
                         <button

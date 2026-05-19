@@ -160,7 +160,7 @@ export default function Landlords() {
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm">{owner.cnic || '—'}</p>
-                        <p className="text-xs text-slate-400">{owner.contactNumber || '—'}</p>
+                        <p className="text-xs text-slate-400">{owner.phone || '—'}</p>
                       </td>
                       <td className="px-5 py-4">
                         <span className={`inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold ${st.style}`}>
@@ -169,7 +169,7 @@ export default function Landlords() {
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className="text-sm font-bold">{owner.hostelCount ?? 0}</span>
+                        <span className="text-sm font-bold">{owner.propertyCount ?? 0}</span>
                       </td>
                       <td className="px-5 py-4 text-sm text-slate-500">
                         {new Date(owner.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

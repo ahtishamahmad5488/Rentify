@@ -16,10 +16,10 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <View style={styles.firstSection}>
         <Image source={welcomeImage} style={styles.successImage} />
-        <Text style={styles.headerText}>Welcome to PG Finder App!</Text>
+        <Text style={styles.headerText}>Welcome to Rentify App!</Text>
         <Text style={styles.subtitleText}>
-          Choose your preferred location to find {'\n'} reliable PG
-          accommodations
+          Find your ideal living space—pick a location {'\n'} and discover homes
+          that fit your needs
         </Text>
       </View>
       <View style={styles.secondSection}>

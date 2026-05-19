@@ -45,9 +45,9 @@ export default function Bookings() {
       const q = search.toLowerCase();
       list = list.filter(
         (b) =>
-          b.tenantName?.toLowerCase().includes(q) ||
-          b.tenantEmail?.toLowerCase().includes(q) ||
-          b.property?.name?.toLowerCase().includes(q),
+          b.userName?.toLowerCase().includes(q) ||
+          b.userEmail?.toLowerCase().includes(q) ||
+          b.property?.title?.toLowerCase().includes(q),
       );
     }
     setFiltered(list);
@@ -138,11 +138,11 @@ export default function Bookings() {
                 {filtered.map((b) => (
                   <tr key={b._id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="px-5 py-4">
-                      <p className="text-sm font-semibold">{b.tenantName || '—'}</p>
-                      <p className="text-xs text-slate-400">{b.tenantEmail || b.tenantUid}</p>
+                      <p className="text-sm font-semibold">{b.userName || '—'}</p>
+                      <p className="text-xs text-slate-400">{b.userEmail || b.userId}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-sm font-medium">{b.property?.name || '—'}</p>
+                      <p className="text-sm font-medium">{b.property?.title || '—'}</p>
                       <p className="text-xs text-slate-400">{b.property?.city || ''}</p>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">

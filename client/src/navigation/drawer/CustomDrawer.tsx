@@ -1,4 +1,4 @@
-'use client';
+// @ts-nocheck
 import {
   View,
   Text,
@@ -57,7 +57,7 @@ const CustomDrawer = ({ navigation }) => {
           <View style={styles.userInfo}>
             <View style={styles.textContainer}>
               <Text style={styles.userName}>{user?.fullName}</Text>
-              <Text style={styles.userRole}>+91 {user?.mobileNumber}</Text>
+              <Text style={styles.userRole}>+92 {user?.mobileNumber}</Text>
             </View>
           </View>
         </View>

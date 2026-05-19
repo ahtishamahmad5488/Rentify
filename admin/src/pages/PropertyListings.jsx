@@ -47,10 +47,10 @@ export default function PropertyListings() {
       const { data } = await getAnalytics();
       const s = data.data.stats;
       setTabCounts({
-        all: s.totalHostels || 0,
-        pending: (s.pendingHostels || 0) + (s.pendingReviewHostels || 0),
-        approved: s.approvedHostels || 0,
-        rejected: s.rejectedHostels || 0,
+        all: s.totalProperties || 0,
+        pending: (s.pendingProperties || 0) + (s.pendingReviewProperties || 0),
+        approved: s.approvedProperties || 0,
+        rejected: s.rejectedProperties || 0,
       });
     } catch (err) {
       console.error('Failed to load tab counts:', err);
@@ -179,7 +179,7 @@ export default function PropertyListings() {
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-lg bg-slate-100 overflow-hidden shrink-0">
                             {img ? (
-                              <img className="w-full h-full object-cover" src={img} alt={p.name} />
+                              <img className="w-full h-full object-cover" src={img} alt={p.title} />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <span className="material-symbols-outlined text-slate-300 text-base">apartment</span>
@@ -187,7 +187,7 @@ export default function PropertyListings() {
                             )}
                           </div>
                           <div>
-                            <p className="font-semibold text-sm">{p.name}</p>
+                            <p className="font-semibold text-sm">{p.title}</p>
                             <p className="text-xs text-slate-400">#{p._id.slice(-6).toUpperCase()}</p>
                           </div>
                         </div>
@@ -198,10 +198,10 @@ export default function PropertyListings() {
                       </td>
                       <td className="px-5 py-4 text-sm">{p.city}</td>
                       <td className="px-5 py-4">
-                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">{p.roomType}</span>
+                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">{p.propertyType}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <p className="text-sm font-bold">{p.pricePerMonth?.toLocaleString() ?? '—'}<span className="text-xs font-normal text-slate-400 ml-1">/mo</span></p>
+                        <p className="text-sm font-bold">{p.price?.toLocaleString() ?? '—'}<span className="text-xs font-normal text-slate-400 ml-1">/mo</span></p>
                       </td>
                       <td className="px-5 py-4">
                         <span className={`inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold ${st.style}`}>

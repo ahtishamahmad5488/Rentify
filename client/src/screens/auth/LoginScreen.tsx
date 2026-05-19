@@ -22,28 +22,28 @@ import appleLogo from '../../assets/images/icons/apple.png';
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
-  const setUser = useAuthStore((s) => s.setUser);
+  const setUser = useAuthStore(s => s.setUser);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      showToast('error', 'Missing fields', 'Enter email and password.');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await loginApi(email.trim().toLowerCase(), password);
-      setUser(res.user, res.token);
-      navigation.replace('drawer-navigation');
-    } catch (err: any) {
-      showToast('error', 'Login failed', err?.response?.data?.message || err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleLogin = async () => {
+  //   if (!email.trim() || !password) {
+  //     showToast('error', 'Missing fields', 'Enter email and password.');
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const res = await loginApi(email.trim().toLowerCase(), password);
+  //     setUser(res.user, res.token);
+  //     navigation.replace('drawer-navigation');
+  //   } catch (err: any) {
+  //     showToast('error', 'Login failed', err?.response?.data?.message || err.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
@@ -105,7 +105,8 @@ export default function LoginScreen() {
       <View style={styles.secondSection}>
         <TouchableOpacity
           style={[styles.loginBtn, loading && { opacity: 0.6 }]}
-          onPress={handleLogin}
+          // onPress={handleLogin}
+          onPress={() => navigation.navigate('drawer-navigation')}
           disabled={loading}
         >
           {loading ? (
@@ -129,24 +130,85 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: wp('6%'), backgroundColor: 'white' },
   firstSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  secondSection: { flex: 0.4, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: hp('10%') },
+  secondSection: {
+    flex: 0.4,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: hp('10%'),
+  },
   headerText: { fontSize: wp('7%'), fontWeight: '700', color: '#333' },
-  headerUnderline: { height: hp('0.4%'), width: wp('20%'), backgroundColor: '#4F46E5', marginTop: hp('1%'), marginBottom: hp('1.5%') },
-  subtitleText: { fontSize: wp('4%'), color: '#666', marginBottom: hp('4%'), textAlign: 'center' },
-  socialLoginContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: wp('2%') },
-  socialButton: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: wp('43.5%'), height: hp('6%'), borderWidth: 1, borderColor: '#ddd', borderRadius: 50, gap: wp('2%') },
+  headerUnderline: {
+    height: hp('0.4%'),
+    width: wp('20%'),
+    backgroundColor: '#4F46E5',
+    marginTop: hp('1%'),
+    marginBottom: hp('1.5%'),
+  },
+  subtitleText: {
+    fontSize: wp('4%'),
+    color: '#666',
+    marginBottom: hp('4%'),
+    textAlign: 'center',
+  },
+  socialLoginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: wp('2%'),
+  },
+  socialButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: wp('43.5%'),
+    height: hp('6%'),
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 50,
+    gap: wp('2%'),
+  },
   socialButtonText: { fontSize: wp('3.8%'), color: '#333' },
   logoStyle: { width: wp('4.5%'), height: wp('4.5%'), resizeMode: 'contain' },
-  orSection: { flexDirection: 'row', alignItems: 'center', width: '90%', marginVertical: hp('3%') },
+  orSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    marginVertical: hp('3%'),
+  },
   orLine: { flex: 1, height: 1, backgroundColor: '#D3D3D3' },
   orText: { marginHorizontal: wp('3%'), fontSize: wp('3.6%'), color: '#777' },
   formSection: { width: '100%' },
-  label: { fontSize: wp('3.8%'), color: '#333', marginBottom: hp('0.8%'), fontWeight: '500' },
-  input: { height: hp('6%'), borderWidth: 1, borderColor: '#E6E6E6', borderRadius: 8, paddingHorizontal: wp('4%'), fontSize: wp('4%'), color: '#333', backgroundColor: '#fafafa' },
+  label: {
+    fontSize: wp('3.8%'),
+    color: '#333',
+    marginBottom: hp('0.8%'),
+    fontWeight: '500',
+  },
+  input: {
+    height: hp('6%'),
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    borderRadius: 8,
+    paddingHorizontal: wp('4%'),
+    fontSize: wp('4%'),
+    color: '#333',
+    backgroundColor: '#fafafa',
+  },
   forgotText: { color: '#4F46E5', fontSize: wp('3.5%'), fontWeight: '600' },
-  loginBtn: { width: '100%', height: hp('6.5%'), backgroundColor: '#4F46E5', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  loginBtn: {
+    width: '100%',
+    height: hp('6.5%'),
+    backgroundColor: '#4F46E5',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   loginBtnText: { color: '#fff', fontWeight: '700', fontSize: wp('4.2%') },
-  loginPrompt: { flexDirection: 'row', alignItems: 'center', marginTop: hp('2.5%') },
+  loginPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: hp('2.5%'),
+  },
   loginPromptText: { fontSize: wp('3.8%'), color: '#999' },
   loginLinkText: { fontSize: wp('3.8%'), color: '#4F46E5', fontWeight: '600' },
 });

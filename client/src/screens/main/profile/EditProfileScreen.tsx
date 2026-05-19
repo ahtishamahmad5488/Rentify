@@ -17,10 +17,10 @@ import ButtonComponent from '../../../components/ButtonComponent';
 import { useNavigation } from '@react-navigation/native';
 
 export default function EditProfileScreen() {
-  const [name, setName] = useState('Lumesh Kumar Sahu');
-  const [mobile, setMobile] = useState('+91 6261731690');
-  const [email, setEmail] = useState('lumesh2911@gmail.com');
-  const [address, setAddress] = useState('Nehru Nagar Utai, Durg, CG, 491107');
+  const [name, setName] = useState('Ahtisham Ahmad');
+  const [mobile, setMobile] = useState('+92 3217734008');
+  const [email, setEmail] = useState('bsf2201170@ue.edu.pk');
+  const [address, setAddress] = useState('Walton Road, Lahore, Pakistan');
   const navigation = useNavigation();
   return (
     <ScrollView style={styles.container}>

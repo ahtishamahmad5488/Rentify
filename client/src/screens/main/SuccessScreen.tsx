@@ -16,7 +16,7 @@ export default function SuccessScreen() {
         <Image source={successImage} style={styles.successImage} />
         <Text style={styles.headerText}>Success!</Text>
         <Text style={styles.subtitleText}>
-          You password has been changed. Please {'\n'} log in again with a new
+          Your password has been changed. Please {'\n'} log in again with a new
           password.
         </Text>
       </View>

@@ -47,7 +47,7 @@ export default function StackNavigationScreen() {
     return () => clearTimeout(t);
   }, []);
 
-  const token = useAuthStore((state) => state.token);
+  const token = useAuthStore(state => state.token);
 
   return (
     <>
@@ -60,48 +60,75 @@ export default function StackNavigationScreen() {
           ) : token ? (
             // ── Authenticated screens ──────────────────────────────────────
             <>
-              <Stack.Screen name="drawer-navigation" component={DrawerNavigationScreen} />
-              <Stack.Screen name="room-details" component={RoomDetailScreen} />
+              <Stack.Screen
+                name="drawer-navigation"
+                component={DrawerNavigationScreen}
+              />
+              {/* <Stack.Screen name="room-details" component={RoomDetailScreen} />
               <Stack.Screen name="booking" component={BookingScreen} />
               <Stack.Screen name="payment" component={PaymentScreen} />
               <Stack.Screen name="chat-details" component={ChatDetailScreen} />
               <Stack.Screen name="welcome" component={WelcomeScreen} />
-              <Stack.Screen name="choose-current-location" component={ChooseCurrentLocationScreen} />
+              <Stack.Screen
+                name="choose-current-location"
+                component={ChooseCurrentLocationScreen}
+              />
               <Stack.Screen
                 name="notication"
                 component={NotificationScreen}
-                options={{ headerShown: true, header: () => <Header title="Notifications" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Notifications" />,
+                }}
               />
               <Stack.Screen
                 name="edit-profile"
                 component={EditProfileScreen}
-                options={{ headerShown: true, header: () => <Header title="Edit Profile" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Edit Profile" />,
+                }}
               />
               <Stack.Screen
                 name="change-password"
                 component={ChangePasswordScreen}
-                options={{ headerShown: true, header: () => <Header title="Change Password" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Change Password" />,
+                }}
               />
               <Stack.Screen
                 name="language"
                 component={LanguageScreen}
-                options={{ headerShown: true, header: () => <Header title="Language" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Language" />,
+                }}
               />
               <Stack.Screen
                 name="help"
                 component={HelpScreen}
-                options={{ headerShown: true, header: () => <Header title="Help Center" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Help Center" />,
+                }}
               />
               <Stack.Screen
                 name="send-feedback"
                 component={SendFeedbackScreen}
-                options={{ headerShown: true, header: () => <Header title="Send Feedback" /> }}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Send Feedback" />,
+                }}
               />
               <Stack.Screen
                 name="about-us"
                 component={AboutScreen}
-                options={{ headerShown: true, header: () => <Header title="About Us" /> }}
-              />
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="About Us" />,
+                }}
+              /> */}
             </>
           ) : (
             // ── Unauthenticated screens ────────────────────────────────────
@@ -109,11 +136,89 @@ export default function StackNavigationScreen() {
               <Stack.Screen name="onboarding" component={OnboardingScreen} />
               <Stack.Screen name="signup" component={SignupScreen} />
               <Stack.Screen name="login" component={LoginScreen} />
-              <Stack.Screen name="forgot-password" component={FogetPasswordScreen} />
-              <Stack.Screen name="otp-verify" component={OtpVerifyResetScreen} />
-              <Stack.Screen name="create-password" component={CreatePasswordScreen} />
+              <Stack.Screen
+                name="forgot-password"
+                component={FogetPasswordScreen}
+              />
+              <Stack.Screen
+                name="otp-verify"
+                component={OtpVerifyResetScreen}
+              />
+              <Stack.Screen
+                name="create-password"
+                component={CreatePasswordScreen}
+              />
               <Stack.Screen name="otp" component={OtpVerificationScreen} />
               <Stack.Screen name="success" component={SuccessScreen} />
+              <Stack.Screen
+                name="drawer-navigation"
+                component={DrawerNavigationScreen}
+              />
+              <Stack.Screen name="room-details" component={RoomDetailScreen} />
+              <Stack.Screen name="booking" component={BookingScreen} />
+              <Stack.Screen name="payment" component={PaymentScreen} />
+              <Stack.Screen name="chat-details" component={ChatDetailScreen} />
+              <Stack.Screen name="welcome" component={WelcomeScreen} />
+              <Stack.Screen
+                name="choose-current-location"
+                component={ChooseCurrentLocationScreen}
+              />
+              <Stack.Screen
+                name="notication"
+                component={NotificationScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Notifications" />,
+                }}
+              />
+              <Stack.Screen
+                name="edit-profile"
+                component={EditProfileScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Edit Profile" />,
+                }}
+              />
+              <Stack.Screen
+                name="change-password"
+                component={ChangePasswordScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Change Password" />,
+                }}
+              />
+              <Stack.Screen
+                name="language"
+                component={LanguageScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Language" />,
+                }}
+              />
+              <Stack.Screen
+                name="help"
+                component={HelpScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Help Center" />,
+                }}
+              />
+              <Stack.Screen
+                name="send-feedback"
+                component={SendFeedbackScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="Send Feedback" />,
+                }}
+              />
+              <Stack.Screen
+                name="about-us"
+                component={AboutScreen}
+                options={{
+                  headerShown: true,
+                  header: () => <Header title="About Us" />,
+                }}
+              />
             </>
           )}
         </Stack.Navigator>

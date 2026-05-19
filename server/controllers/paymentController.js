@@ -7,12 +7,12 @@ import Booking from '../models/Booking.js';
 // @access Public (demo)
 export const processFakePayment = async (req, res, next) => {
   try {
-    const { bookingId, tenantUid, method = 'CARD' } = req.body;
+    const { bookingId, userId, method = 'CARD' } = req.body;
 
-    if (!bookingId || !tenantUid) {
+    if (!bookingId || !userId) {
       return res.status(400).json({
         success: false,
-        message: 'bookingId and tenantUid are required',
+        message: 'bookingId and userId are required',
       });
     }
 
@@ -25,11 +25,12 @@ export const processFakePayment = async (req, res, next) => {
 
     const payment = await Payment.create({
       booking: booking._id,
-      tenantUid,
+      userId,
       amount: booking.totalAmount,
       method,
       status: 'SUCCESS',
       transactionId,
+      paidAt: new Date(),
     });
 
     booking.paymentStatus = 'PAID';
@@ -53,7 +54,7 @@ export const listAllPayments = async (req, res, next) => {
     const payments = await Payment.find({})
       .populate({
         path: 'booking',
-        populate: { path: 'property', select: 'name city pricePerMonth' },
+        populate: { path: 'property', select: 'title city price' },
       })
       .sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: payments });

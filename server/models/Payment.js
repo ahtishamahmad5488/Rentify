@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    tenantUid: { type: String, required: true, index: true },
+    userId: { type: String, required: true, index: true },
     amount: { type: Number, required: true, min: 0 },
     method: {
       type: String,
@@ -20,8 +20,8 @@ const paymentSchema = new mongoose.Schema(
       enum: ['SUCCESS', 'FAILED', 'PENDING'],
       default: 'SUCCESS',
     },
-    // Fake transaction id surfaced in the demo UI.
     transactionId: { type: String, required: true, unique: true },
+    paidAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

@@ -1,34 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getHostelById, updateHostelStatus } from '../api/adminApi';
+import { getPropertyById, updatePropertyStatus } from '../api/adminApi';
 
-
-export default function HostelDetail() {
+export default function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [hostel, setHostel] = useState(null);
+  const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState('');
 
   useEffect(() => {
-    const fetchHostel = async () => {
+    const fetchProperty = async () => {
       try {
-        const { data } = await getHostelById(id);
-        setHostel(data.data);
+        const { data } = await getPropertyById(id);
+        setProperty(data.data);
       } catch (err) {
-        console.error('Failed to load hostel:', err);
+        console.error('Failed to load property:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchHostel();
+    fetchProperty();
   }, [id]);
 
   const handleStatusChange = async (status) => {
     setActionLoading(status);
     try {
-      await updateHostelStatus(id, status);
-      setHostel((prev) => ({ ...prev, status }));
+      await updatePropertyStatus(id, status);
+      setProperty((prev) => ({ ...prev, status }));
     } catch (err) {
       console.error('Status update failed:', err);
     } finally {
@@ -46,34 +45,34 @@ export default function HostelDetail() {
   if (loading) {
     return (
       <div className="bg-background-light font-display text-slate-900 min-h-screen flex items-center justify-center">
-        <p className="text-slate-400">Loading hostel details...</p>
+        <p className="text-slate-400">Loading property details...</p>
       </div>
     );
   }
 
-  if (!hostel) {
+  if (!property) {
     return (
       <div className="bg-background-light font-display text-slate-900 min-h-screen flex items-center justify-center">
-        <p className="text-slate-400">Hostel not found.</p>
+        <p className="text-slate-400">Property not found.</p>
       </div>
     );
   }
 
-  const badge = statusBadge[hostel.status] || statusBadge.PENDING;
-  const owner = hostel.owner || {};
-  const images = hostel.images || [];
-  const mainImg = images[0]?.url || images[0]?.secure_url || '';
+  const badge = statusBadge[property.status] || statusBadge.PENDING;
+  const owner = property.owner || {};
+  const images = property.images || [];
+  const mainImg = images[0]?.secure_url || images[0]?.url || '';
   const thumbImgs = images.slice(1, 4);
   const extraCount = Math.max(0, images.length - 4);
 
   const ownerInfo = [
     { label: 'Full Name', value: owner.name || '—' },
     { label: 'Email Address', value: owner.email || '—' },
-    { label: 'Phone Number', value: owner.contactNumber || '—' },
+    { label: 'Phone Number', value: owner.phone || '—' },
     { label: 'CNIC Number', value: owner.cnic || '—', hasToggle: true },
   ];
 
-  const facilities = (hostel.facilities || []).map((f) => {
+  const facilities = (property.facilities || []).map((f) => {
     const iconMap = {
       wifi: 'wifi', security: 'security', mess: 'restaurant', laundry: 'local_laundry_service',
       ac: 'ac_unit', generator: 'electric_bolt', parking: 'local_parking', gym: 'fitness_center',
@@ -83,37 +82,24 @@ export default function HostelDetail() {
     return { icon: iconMap[key] || 'check_circle', label: f };
   });
 
-  const isPending = hostel.status === 'PENDING' || hostel.status === 'PENDING_REVIEW';
+  const isPending = property.status === 'PENDING' || property.status === 'PENDING_REVIEW';
 
   return (
     <div className="bg-background-light font-display text-slate-900 min-h-screen">
       {/* Top Navbar */}
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-10 py-3">
-        <div className="flex items-center gap-4 sm:gap-8">
-          <div className="flex items-center gap-3">
-            <div className="size-6 shrink-0">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
-            <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">StayHub</h2>
+        <div className="flex items-center gap-3">
+          <div className="bg-primary rounded-lg p-1.5 flex items-center justify-center">
+            <span className="material-symbols-outlined text-white text-base">apartment</span>
           </div>
+          <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">Rentify</h2>
         </div>
         <div className="flex items-center gap-3 sm:gap-8">
           <div className="hidden sm:flex items-center gap-6 sm:gap-9">
             <Link className="text-slate-700 text-sm font-medium hover:text-primary transition-colors" to="/">Dashboard</Link>
-            <Link className="text-sm font-bold border-b-2 border-primary pb-1" to="/hostels">Hostels</Link>
-            <Link className="text-slate-700 text-sm font-medium hover:text-primary transition-colors" to="/hostel-owners">Owners</Link>
+            <Link className="text-sm font-bold border-b-2 border-primary pb-1" to="/properties">Properties</Link>
+            <Link className="text-slate-700 text-sm font-medium hover:text-primary transition-colors" to="/landlords">Landlords</Link>
           </div>
-          <div className="flex gap-2">
-            <button className="flex items-center justify-center rounded-lg h-9 w-9 bg-slate-100 text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer">
-              <span className="material-symbols-outlined text-xl">notifications</span>
-            </button>
-          </div>
-          <div className="bg-primary/20 aspect-square bg-cover rounded-full size-9 border-2 border-primary/10" />
         </div>
       </header>
 
@@ -122,11 +108,11 @@ export default function HostelDetail() {
         <div className="px-4 sm:px-10 py-4 sm:py-6 max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6">
-            <Link className="text-slate-500 text-sm flex items-center gap-1 hover:text-primary transition-colors" to="/hostels">
-              <span className="material-symbols-outlined text-sm">home</span> Hostels
+            <Link className="text-slate-500 text-sm flex items-center gap-1 hover:text-primary transition-colors" to="/properties">
+              <span className="material-symbols-outlined text-sm">home</span> Properties
             </Link>
             <span className="text-slate-400">/</span>
-            <span className="text-slate-900 text-sm font-semibold">Hostel Detail View</span>
+            <span className="text-slate-900 text-sm font-semibold">Property Detail</span>
           </div>
 
           {/* Title + Back Button */}
@@ -134,7 +120,7 @@ export default function HostelDetail() {
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-slate-900 text-2xl sm:text-4xl font-black leading-tight tracking-tight">
-                  {hostel.name}
+                  {property.title}
                 </h1>
                 <span className={`px-3 py-1 rounded-full ${badge.bg} text-xs font-bold flex items-center gap-1 uppercase tracking-wider`}>
                   <span className="material-symbols-outlined text-xs">{badge.icon}</span> {badge.label}
@@ -142,11 +128,11 @@ export default function HostelDetail() {
               </div>
               <p className="text-slate-500 text-lg flex items-center gap-2">
                 <span className="material-symbols-outlined text-xl">location_on</span>
-                {hostel.fullAddress || `${hostel.area || ''}, ${hostel.city}`}
+                {property.address || `${property.area || ''}, ${property.city}`}
               </p>
             </div>
             <button
-              onClick={() => navigate('/hostels')}
+              onClick={() => navigate('/properties')}
               className="flex items-center justify-center gap-2 rounded-lg h-11 px-6 bg-white border border-slate-200 text-slate-700 text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">arrow_back</span> Back to List
@@ -161,7 +147,7 @@ export default function HostelDetail() {
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-3 h-80 bg-slate-200 rounded-xl overflow-hidden shadow-sm">
                   {mainImg ? (
-                    <img className="w-full h-full object-cover" src={mainImg} alt={hostel.name} />
+                    <img className="w-full h-full object-cover" src={mainImg} alt={property.title} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="material-symbols-outlined text-6xl text-slate-300">image</span>
@@ -175,10 +161,10 @@ export default function HostelDetail() {
                       i === 2 && extraCount > 0 ? 'group cursor-pointer' : ''
                     }`}
                   >
-                    {(thumbImgs[i]?.url || thumbImgs[i]?.secure_url) ? (
+                    {(thumbImgs[i]?.secure_url || thumbImgs[i]?.url) ? (
                       <img
                         className={`w-full h-full object-cover ${i === 2 && extraCount > 0 ? 'opacity-80' : ''}`}
-                        src={thumbImgs[i].url || thumbImgs[i].secure_url}
+                        src={thumbImgs[i].secure_url || thumbImgs[i].url}
                         alt=""
                       />
                     ) : (
@@ -201,7 +187,7 @@ export default function HostelDetail() {
                   <span className="material-symbols-outlined">description</span> Description
                 </h3>
                 <p className="text-slate-600 leading-relaxed mb-6">
-                  {hostel.description || 'No description provided.'}
+                  {property.description || 'No description provided.'}
                 </p>
                 {facilities.length > 0 && (
                   <>
@@ -226,7 +212,7 @@ export default function HostelDetail() {
               {/* Owner Info */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <span className="material-symbols-outlined">person</span> Owner Info
+                  <span className="material-symbols-outlined">person</span> Landlord Info
                 </h3>
                 <div className="space-y-4">
                   {ownerInfo.map((item) => (
@@ -245,48 +231,46 @@ export default function HostelDetail() {
                 </div>
               </div>
 
-              {/* Hostel Details */}
+              {/* Property Details */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <span className="material-symbols-outlined">info</span> Hostel Details
+                  <span className="material-symbols-outlined">info</span> Property Details
                 </h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">City</span>
-                      <p className="text-slate-900 font-medium">{hostel.city}</p>
+                      <p className="text-slate-900 font-medium">{property.city}</p>
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Price / Month</span>
-                      <p className="text-slate-900 font-medium">PKR {hostel.pricePerMonth?.toLocaleString() ?? '—'}</p>
+                      <p className="text-slate-900 font-medium">PKR {property.price?.toLocaleString() ?? '—'}</p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Full Address</span>
-                    <p className="text-slate-900 font-medium">{hostel.fullAddress || '—'}</p>
+                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Address</span>
+                    <p className="text-slate-900 font-medium">{property.address || '—'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">
-                        Available Rooms
-                      </span>
-                      <p className="text-slate-900 font-medium">{hostel.availableRooms ?? '—'} / {hostel.totalRooms ?? '—'}</p>
+                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Available Rooms</span>
+                      <p className="text-slate-900 font-medium">{property.availableRooms ?? '—'} / {property.totalRooms ?? '—'}</p>
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Gender / Type</span>
-                      <p className="text-slate-900 font-medium">{hostel.genderType} / {hostel.roomType}</p>
+                      <p className="text-slate-900 font-medium">{property.genderType} / {property.propertyType}</p>
                     </div>
                   </div>
                 </div>
                 {/* Map */}
                 {(() => {
-                  const coords = hostel.location?.coordinates;
+                  const coords = property.location?.coordinates;
                   const lng = coords?.[0];
                   const lat = coords?.[1];
                   const hasCoords = lat != null && lng != null;
                   const googleMapsUrl = hasCoords
                     ? `https://www.google.com/maps?q=${lat},${lng}`
-                    : `https://www.google.com/maps/search/${encodeURIComponent(hostel.fullAddress || hostel.city)}`;
+                    : `https://www.google.com/maps/search/${encodeURIComponent(property.address || property.city)}`;
                   const embedUrl = hasCoords
                     ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`
                     : null;
@@ -298,7 +282,7 @@ export default function HostelDetail() {
                           <iframe
                             src={embedUrl}
                             className="w-full h-full border-none"
-                            title="Hostel Location"
+                            title="Property Location"
                           />
                           <a
                             href={googleMapsUrl}
@@ -341,7 +325,7 @@ export default function HostelDetail() {
               <p className="text-sm text-slate-600">
                 Submitted on{' '}
                 <span className="font-bold">
-                  {new Date(hostel.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(property.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </p>
             </div>

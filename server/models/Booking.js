@@ -2,26 +2,25 @@ import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema(
   {
-    // Firebase UID of the tenant (mobile auth is via Firebase).
-    // Stored as a string so we don't depend on a Mongo User row.
-    tenantUid: {
+    // Firebase UID or local user identifier
+    userId: {
       type: String,
-      required: [true, 'tenantUid is required'],
+      required: [true, 'userId is required'],
       index: true,
     },
-    tenantName: { type: String, trim: true, default: '' },
-    tenantEmail: { type: String, trim: true, default: '' },
+    userName: { type: String, trim: true, default: '' },
+    userEmail: { type: String, trim: true, default: '' },
 
     property: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Hostel', // underlying collection name
+      ref: 'Property',
       required: true,
       index: true,
     },
 
+    bookingDate: { type: Date, default: Date.now },
     checkInDate: { type: Date, required: true },
     durationMonths: { type: Number, default: 1, min: 1 },
-
     totalAmount: { type: Number, required: true, min: 0 },
 
     status: {
@@ -29,7 +28,6 @@ const bookingSchema = new mongoose.Schema(
       enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'],
       default: 'PENDING',
     },
-
     paymentStatus: {
       type: String,
       enum: ['UNPAID', 'PAID', 'REFUNDED'],

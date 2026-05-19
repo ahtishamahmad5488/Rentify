@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api/auth/admin',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/auth/admin',
 });
 
-// Attach token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('adminToken');
   if (token) {
@@ -13,7 +12,6 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-logout on 401
 API.interceptors.response.use(
   (res) => res,
   (error) => {

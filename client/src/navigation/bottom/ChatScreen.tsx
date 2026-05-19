@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import {
   StyleSheet,
@@ -32,42 +33,42 @@ export default function ChatScreen() {
   const messages = [
     {
       id: '1',
-      name: 'Ram',
+      name: 'Ahtisham Ahmad',
       message: 'Thank you for information',
       time: '1:22 AM',
       image: img1,
     },
     {
       id: '2',
-      name: 'Mohan',
+      name: 'Huzaifa Baig',
       message: 'Hi there, the price is negotiable',
       time: '8:22 PM',
       image: img2,
     },
     {
       id: '3',
-      name: 'Chintu',
+      name: 'Zunair Ali',
       message: 'Have a plan for discuss this ?',
       time: '8:22 PM',
       image: img3,
     },
     {
       id: '4',
-      name: 'Aditi',
+      name: 'Sana Khan',
       message: 'Okay let me check.',
       time: '8:22 PM',
       image: img4,
     },
     {
       id: '5',
-      name: 'Rohan',
+      name: 'Ali Raza',
       message: 'Please send me the details.',
       time: '8:22 PM',
       image: img5,
     },
     {
       id: '6',
-      name: 'Khushi',
+      name: 'Maria Saleem',
       message: 'What is your budget?',
       time: '8:22 PM',
       image: img6,

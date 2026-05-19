@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"d:\\\\React Native Projects\\\\Rentify\\\\server\\\\\" -Recurse -File | Select-Object -ExpandProperty FullName)",
+      "Bash(node -e ' *)",
+      "Bash(node --input-type=module --eval ' *)",
+      "Bash(timeout 8 node index.js)",
+      "Bash(Get-ChildItem -Path \"d:\\\\React Native Projects\\\\Rentify\\\\admin\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName, Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)"
+    ]
+  }
+}

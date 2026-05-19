@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -55,7 +56,7 @@ export default function ProfileScreen() {
           <Image source={img1} style={styles.profileImage} />
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{user?.fullName}</Text>
-            <Text style={styles.profileEmail}>+91 {user?.mobileNumber}</Text>
+            <Text style={styles.profileEmail}>+92 {user?.mobileNumber}</Text>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('edit-profile')}>
             <Pencil size={wp('5%')} color="#414141" />

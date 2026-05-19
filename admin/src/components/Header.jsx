@@ -5,14 +5,16 @@ import { io } from 'socket.io-client';
 
 const pageTitles = {
   '/': { title: 'Dashboard Overview', subtitle: null },
-  '/hostels': { title: 'Hostel Listings', subtitle: 'Manage hostel submissions' },
-  '/hostel-owners': { title: 'Hostel Owners', subtitle: 'Manage owner profiles' },
+  '/properties': { title: 'Property Listings', subtitle: 'Manage property submissions' },
+  '/landlords': { title: 'Landlords', subtitle: 'Manage landlord accounts' },
+  '/bookings': { title: 'Bookings', subtitle: 'All tenant bookings' },
+  '/payments': { title: 'Payments', subtitle: 'Payment transactions' },
 };
 
 const typeIcon = {
-  NEW_HOSTEL: { icon: 'add_business', color: 'text-amber-500 bg-amber-50' },
-  HOSTEL_APPROVED: { icon: 'verified', color: 'text-emerald-500 bg-emerald-50' },
-  HOSTEL_REJECTED: { icon: 'block', color: 'text-rose-500 bg-rose-50' },
+  NEW_PROPERTY: { icon: 'add_business', color: 'text-amber-500 bg-amber-50' },
+  PROPERTY_APPROVED: { icon: 'verified', color: 'text-emerald-500 bg-emerald-50' },
+  PROPERTY_REJECTED: { icon: 'block', color: 'text-rose-500 bg-rose-50' },
 };
 
 export default function Header({ onMenuClick }) {
@@ -23,7 +25,7 @@ export default function Header({ onMenuClick }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const raw = pageTitles[pathname] || { title: 'Dashboard', subtitle: '' };
+  const raw = pageTitles[pathname] || { title: 'Rentify Admin', subtitle: '' };
   const page = {
     ...raw,
     subtitle: raw.subtitle === null ? `Welcome back, ${user?.name || 'Admin'}` : raw.subtitle,
@@ -32,7 +34,8 @@ export default function Header({ onMenuClick }) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
-    const socket = io('http://localhost:5000', { transports: ['websocket'] });
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    const socket = io(socketUrl, { transports: ['websocket'] });
     socket.on('connect', () => socket.emit('join_admin'));
     socket.on('new_notification', (notif) => {
       setNotifications((prev) => [{ ...notif, id: Date.now(), read: false }, ...prev].slice(0, 20));
@@ -40,7 +43,6 @@ export default function Header({ onMenuClick }) {
     return () => socket.disconnect();
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpen(false);
@@ -55,7 +57,7 @@ export default function Header({ onMenuClick }) {
   };
 
   const handleNotifClick = (notif) => {
-    if (notif.hostelId) navigate(`/hostels/${notif.hostelId}`);
+    if (notif.propertyId) navigate(`/properties/${notif.propertyId}`);
     setOpen(false);
   };
 

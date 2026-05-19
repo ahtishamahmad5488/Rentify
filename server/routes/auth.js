@@ -1,7 +1,7 @@
 import express from 'express';
 import userRoutes from './userRoutes.js';
 import adminRoutes from './adminRoutes.js';
-import hostelOwnerRoutes from './hostelOwnerRoutes.js';
+import landlordRoutes from './landlordRoutes.js';
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.use('/user', userRoutes);
 // ─── Admin Auth ───────────────────────────────────────────────────────────────
 router.use('/admin', adminRoutes);
 
-// ─── Hostel Owner Auth ────────────────────────────────────────────────────────
-router.use('/hostel-owner', hostelOwnerRoutes);
+// ─── Landlord Auth ────────────────────────────────────────────────────────────
+router.use('/landlord', landlordRoutes);
 
 export default router;

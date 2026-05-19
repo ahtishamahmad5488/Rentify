@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Development-only: allows HTTP (cleartext) to any host including local IP addresses.
+  Android's <domain> tag only works with hostnames, NOT IP addresses, so we use
+  base-config to cover 192.168.x.x and 10.x.x.x backends.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

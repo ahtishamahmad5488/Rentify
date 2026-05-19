@@ -18,7 +18,8 @@ const connectDB = async () => {
     console.error('❌ MongoDB Connection Rejected');
     console.error('📛 Error:', error.message);
 
-    process.exit(1);
+    // Throw so the caller (index.js startServer) can decide whether to exit or continue
+    throw error;
   }
 };
 

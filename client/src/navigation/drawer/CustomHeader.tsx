@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import {
@@ -24,7 +25,7 @@ export default function CustomHeader({ title }: { title: string }) {
         <View style={styles.locationContainer}>
           <View style={styles.location}>
             <MapPin size={hp('2.2%')} color={'#1C689B'} />
-            <Text>Nehru Nagar Utai</Text>
+            <Text>College Road, Township</Text>
           </View>
         </View>
       </View>

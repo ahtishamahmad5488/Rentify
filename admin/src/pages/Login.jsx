@@ -47,7 +47,7 @@ export default function Login() {
             <span className="material-symbols-outlined text-3xl">domain</span>
           </div>
           <h1 className="text-slate-900 text-2xl font-bold tracking-tight">
-            StayHub Admin
+            Rentify Admin
           </h1>
         </div>
 
@@ -191,7 +191,7 @@ export default function Login() {
 
         {/* Footer */}
         <footer className="mt-8 text-center text-slate-400 text-xs">
-          <p>&copy; 2024 StayHub Pakistan. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Rentify Pakistan. All rights reserved.</p>
           <div className="flex justify-center gap-4 mt-2">
             <a className="hover:text-primary" href="#">
               Privacy Policy

@@ -41,8 +41,8 @@ export default function Payments() {
       list = list.filter(
         (p) =>
           p.transactionId?.toLowerCase().includes(q) ||
-          p.tenantUid?.toLowerCase().includes(q) ||
-          p.booking?.property?.name?.toLowerCase().includes(q),
+          p.userId?.toLowerCase().includes(q) ||
+          p.booking?.property?.title?.toLowerCase().includes(q),
       );
     }
     setFiltered(list);
@@ -141,11 +141,11 @@ export default function Payments() {
                       <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded text-slate-700">{p.transactionId}</span>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-sm font-medium">{p.booking?.property?.name || '—'}</p>
+                      <p className="text-sm font-medium">{p.booking?.property?.title || '—'}</p>
                       <p className="text-xs text-slate-400">{p.booking?.property?.city || ''}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-xs text-slate-500 font-mono">{p.tenantUid?.slice(0, 16)}…</p>
+                      <p className="text-xs text-slate-500 font-mono">{p.userId?.slice(0, 16) || '—'}</p>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5">

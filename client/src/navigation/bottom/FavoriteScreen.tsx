@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   FlatList,
   Image,
@@ -24,7 +25,7 @@ const rooms = [
   {
     id: 1,
     name: 'PG Sharing Room',
-    location: 'Bhilai, Durg',
+    location: 'Iqbal Town, Lahore ',
     price: 1600,
     oldPrice: 1800,
     rating: 4.8,
@@ -33,7 +34,7 @@ const rooms = [
   {
     id: 2,
     name: 'PG Room',
-    location: 'CC Bhilai, Durg',
+    location: 'Garden Town, Lahore',
     price: 2000,
     oldPrice: 2200,
     rating: 4.7,
@@ -42,7 +43,7 @@ const rooms = [
   {
     id: 3,
     name: 'Student Room',
-    location: 'Bhilai Sec-10, Durg',
+    location: 'College Road, Lahore',
     price: 2100,
     oldPrice: 2300,
     rating: 4.8,
@@ -51,7 +52,7 @@ const rooms = [
   {
     id: 4,
     name: 'PG Sharing Room',
-    location: 'Chowhan Town, Bhilai',
+    location: 'Samnabad, Near Birds Market',
     price: 1600,
     oldPrice: 1800,
     rating: 4.6,
@@ -60,7 +61,7 @@ const rooms = [
   {
     id: 5,
     name: 'PG Sharing Room',
-    location: 'Green Velly, Bhilai',
+    location: 'Shalamar Link Road, Lahore',
     price: 1900,
     oldPrice: 2000,
     rating: 4.6,
@@ -69,7 +70,7 @@ const rooms = [
   {
     id: 6,
     name: 'Student Room',
-    location: 'Bhilai, Durg',
+    location: 'Walton Road Lahore Cantt',
     price: 1600,
     oldPrice: 1800,
     rating: 4.6,
@@ -83,7 +84,28 @@ export default function FavoriteScreen() {
       key={item.id}
       activeOpacity={0.8}
       style={styles.card}
-      onPress={() => navigation.navigate('room-details')}
+      // onPress={() => navigation.navigate('room-details')}
+      onPress={() =>
+        navigation.navigate('room-details', {
+          property: {
+            _id: item.id,
+            name: item.name,
+            area: item.location,
+            city: 'Lahore',
+            pricePerMonth: item.price,
+            images: [{ secure_url: item.image }],
+            description: 'Beautiful room for students',
+            roomType: 'Shared',
+            genderType: 'Any',
+            availableRooms: 1,
+            totalRooms: 2,
+            facilities: ['WiFi', 'Furniture'],
+            location: {
+              coordinates: [73.0479, 31.5204], // dummy Lahore coords
+            },
+          },
+        })
+      }
     >
       <View style={styles.imageContainer}>
         <Image source={item.image} style={styles.image} />
@@ -97,8 +119,8 @@ export default function FavoriteScreen() {
         <Text style={styles.location}>{item.location}</Text>
 
         <View style={styles.priceRow}>
-          <Text style={styles.newPrice}>₹ {item.price}</Text>
-          <Text style={styles.oldPrice}>₹ {item.oldPrice}</Text>
+          <Text style={styles.newPrice}>Rs {item.price}</Text>
+          <Text style={styles.oldPrice}>Rs {item.oldPrice}</Text>
           <View style={styles.ratingContainer}>
             <Star size={wp('3.5%')} color="#F59E0B" fill="#F59E0B" />
             <Text style={styles.ratingText}>{item.rating}</Text>

@@ -11,7 +11,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 
-const languages = ['English', 'Hindi', 'Gujarati', 'Marathi'];
+const languages = ['English', 'Urdu'];
 export default function LanguageScreen() {
   const [selected, setSelected] = useState('English');
 
