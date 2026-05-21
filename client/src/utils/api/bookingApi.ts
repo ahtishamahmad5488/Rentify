@@ -2,9 +2,9 @@ import { axiosInstance } from '../axios';
 
 export interface Booking {
   _id: string;
-  tenantUid: string;
-  tenantName?: string;
-  tenantEmail?: string;
+  userId: string;
+  userName?: string;
+  userEmail?: string;
   property: any;
   checkInDate: string;
   durationMonths: number;
@@ -15,9 +15,9 @@ export interface Booking {
 }
 
 export const createBooking = async (payload: {
-  tenantUid: string;
-  tenantName?: string;
-  tenantEmail?: string;
+  userId: string;
+  userName?: string;
+  userEmail?: string;
   propertyId: string;
   checkInDate: string;
   durationMonths?: number;
@@ -26,14 +26,14 @@ export const createBooking = async (payload: {
   return res.data?.data as Booking;
 };
 
-export const listMyBookings = async (uid: string) => {
-  const res = await axiosInstance.get(`/bookings/tenant/${uid}`);
+export const listMyBookings = async (userId: string) => {
+  const res = await axiosInstance.get(`/bookings/user/${userId}`);
   return res.data?.data as Booking[];
 };
 
 export const processPayment = async (payload: {
   bookingId: string;
-  tenantUid: string;
+  userId: string;
   method?: 'CARD' | 'WALLET' | 'CASH';
 }) => {
   const res = await axiosInstance.post('/payments', payload);

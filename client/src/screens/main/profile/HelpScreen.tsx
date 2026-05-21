@@ -21,7 +21,7 @@ export default function HelpScreen() {
         </View>
         <View>
           <Text style={styles.label}>Our 24×7 Customer Service</Text>
-          <Text style={styles.value}>+91 6261731690</Text>
+          <Text style={styles.value}>+92 3217734008</Text>
         </View>
       </Pressable>
 
@@ -32,7 +32,7 @@ export default function HelpScreen() {
         </View>
         <View>
           <Text style={styles.label}>Write us at</Text>
-          <Text style={styles.value}>pgfinderapp@support.com</Text>
+          <Text style={styles.value}>rentify@support.com</Text>
         </View>
       </Pressable>
     </View>

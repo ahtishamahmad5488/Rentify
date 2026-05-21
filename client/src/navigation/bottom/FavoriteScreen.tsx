@@ -9,135 +9,111 @@ import {
 } from 'react-native';
 import React from 'react';
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import { Heart, Star } from 'lucide-react-native';
+import { Heart, MapPin, Building2, Trash2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import room1 from '../../assets/images/rooms/1.png';
-import room2 from '../../assets/images/rooms/2.png';
-import room3 from '../../assets/images/rooms/3.png';
-import room4 from '../../assets/images/rooms/4.png';
-import room5 from '../../assets/images/rooms/5.png';
-import room6 from '../../assets/images/rooms/6.png';
+import { useFavoriteStore } from '../../store/useFavoriteStore';
+import { formatPrice, resolveImageUrl } from '../../utils/helpers';
 
-const rooms = [
-  {
-    id: 1,
-    name: 'PG Sharing Room',
-    location: 'Iqbal Town, Lahore ',
-    price: 1600,
-    oldPrice: 1800,
-    rating: 4.8,
-    image: room1,
-  },
-  {
-    id: 2,
-    name: 'PG Room',
-    location: 'Garden Town, Lahore',
-    price: 2000,
-    oldPrice: 2200,
-    rating: 4.7,
-    image: room2,
-  },
-  {
-    id: 3,
-    name: 'Student Room',
-    location: 'College Road, Lahore',
-    price: 2100,
-    oldPrice: 2300,
-    rating: 4.8,
-    image: room3,
-  },
-  {
-    id: 4,
-    name: 'PG Sharing Room',
-    location: 'Samnabad, Near Birds Market',
-    price: 1600,
-    oldPrice: 1800,
-    rating: 4.6,
-    image: room4,
-  },
-  {
-    id: 5,
-    name: 'PG Sharing Room',
-    location: 'Shalamar Link Road, Lahore',
-    price: 1900,
-    oldPrice: 2000,
-    rating: 4.6,
-    image: room5,
-  },
-  {
-    id: 6,
-    name: 'Student Room',
-    location: 'Walton Road Lahore Cantt',
-    price: 1600,
-    oldPrice: 1800,
-    rating: 4.6,
-    image: room6,
-  },
-];
 export default function FavoriteScreen() {
-  const navigation = useNavigation();
-  const renderRoom = ({ item }) => (
-    <TouchableOpacity
-      key={item.id}
-      activeOpacity={0.8}
-      style={styles.card}
-      // onPress={() => navigation.navigate('room-details')}
-      onPress={() =>
-        navigation.navigate('room-details', {
-          property: {
-            _id: item.id,
-            name: item.name,
-            area: item.location,
-            city: 'Lahore',
-            pricePerMonth: item.price,
-            images: [{ secure_url: item.image }],
-            description: 'Beautiful room for students',
-            roomType: 'Shared',
-            genderType: 'Any',
-            availableRooms: 1,
-            totalRooms: 2,
-            facilities: ['WiFi', 'Furniture'],
-            location: {
-              coordinates: [73.0479, 31.5204], // dummy Lahore coords
-            },
-          },
-        })
-      }
-    >
-      <View style={styles.imageContainer}>
-        <Image source={item.image} style={styles.image} />
-        <TouchableOpacity style={styles.heartIcon}>
-          <Heart color="#1C689B" size={wp('5%')} fill={'#1C689B'} />
-        </TouchableOpacity>
-      </View>
+  const navigation = useNavigation<any>();
+  const favorites = useFavoriteStore(state => state.favorites);
+  const removeFavorite = useFavoriteStore(state => state.removeFavorite);
 
-      <View style={styles.cardContent}>
-        <Text style={styles.roomName}>{item.name}</Text>
-        <Text style={styles.location}>{item.location}</Text>
+  const renderItem = ({ item }: any) => {
+    const imageUrl = resolveImageUrl(item.images);
 
-        <View style={styles.priceRow}>
-          <Text style={styles.newPrice}>Rs {item.price}</Text>
-          <Text style={styles.oldPrice}>Rs {item.oldPrice}</Text>
-          <View style={styles.ratingContainer}>
-            <Star size={wp('3.5%')} color="#F59E0B" fill="#F59E0B" />
-            <Text style={styles.ratingText}>{item.rating}</Text>
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.85}
+        onPress={() =>
+          navigation.navigate('room-details', {
+            propertyId: item._id,
+            property: item,
+          })
+        }
+      >
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.placeholder]}>
+            <Building2 size={34} color="#D1D5DB" />
+          </View>
+        )}
+
+        <View style={styles.content}>
+          <View style={styles.topRow}>
+            <Text style={styles.title} numberOfLines={1}>
+              {item.title || 'Untitled Property'}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.removeBtn}
+              onPress={() => removeFavorite(item._id)}
+            >
+              <Trash2 size={16} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.locationRow}>
+            <MapPin size={14} color="#6B7280" />
+            <Text style={styles.location} numberOfLines={1}>
+              {item.area ? `${item.area}, ` : ''}
+              {item.city || item.address || 'Location not available'}
+            </Text>
+          </View>
+
+          <View style={styles.bottomRow}>
+            <Text style={styles.price}>
+              {formatPrice(item.price)}
+              <Text style={styles.priceSub}>/mo</Text>
+            </Text>
+
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeText}>
+                {item.propertyType || 'Property'}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.screenTitle}>Favorites</Text>
+          <Text style={styles.subtitle}>Your saved properties appear here</Text>
+        </View>
+
+        <View style={styles.headerIcon}>
+          <Heart size={22} color="#0b14bf" fill="#0b14bf" />
+        </View>
+      </View>
+
       <FlatList
-        data={rooms}
-        renderItem={renderRoom}
-        keyExtractor={item => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
+        data={favorites}
+        keyExtractor={(item: any) => item._id}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.list,
+          favorites.length === 0 && styles.emptyList,
+        ]}
+        ListEmptyComponent={
+          <View style={styles.emptyBox}>
+            <Heart size={60} color="#D1D5DB" />
+            <Text style={styles.emptyTitle}>No favorites yet</Text>
+            <Text style={styles.emptyText}>
+              Tap the heart icon on any property to save it here.
+            </Text>
+          </View>
+        }
       />
     </View>
   );
@@ -146,78 +122,139 @@ export default function FavoriteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: wp('3%'),
+    backgroundColor: '#F6F8FC',
+    paddingHorizontal: wp('4%'),
+    paddingTop: hp('2%'),
   },
-  row: {
+  headerRow: {
     flexDirection: 'row',
-    gap: hp('1%'),
+    alignItems: 'center',
     justifyContent: 'space-between',
-
-    marginTop: hp('1%'),
+    marginBottom: hp('2%'),
+  },
+  screenTitle: {
+    fontSize: wp('6.2%'),
+    fontWeight: '900',
+    color: '#061A4D',
+  },
+  subtitle: {
+    marginTop: hp('0.3%'),
+    fontSize: wp('3.4%'),
+    color: '#6B7280',
+  },
+  headerIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#0b14bf33',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  list: {
+    paddingBottom: hp('12%'),
   },
   card: {
-    backgroundColor: '#fff',
-    width: wp('46%'),
-    borderRadius: wp('3%'),
-    borderWidth: 0.5,
-    borderColor: 'lightgrey',
-  },
-  imageContainer: {
-    position: 'relative',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    marginBottom: hp('1.8%'),
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 10,
   },
   image: {
     width: '100%',
-    height: hp('12%'),
-    borderTopLeftRadius: wp('3%'),
-    borderTopRightRadius: wp('3%'),
+    height: hp('22%'),
+    backgroundColor: '#E5E7EB',
   },
-  heartIcon: {
-    position: 'absolute',
-    top: hp('1%'),
-    right: wp('2%'),
-    backgroundColor: '#fff',
-    padding: wp('1.5%'),
-    borderRadius: wp('5%'),
+  placeholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  cardContent: {
-    padding: wp('3%'),
+  content: {
+    padding: wp('4%'),
   },
-  roomName: {
-    fontSize: wp('4%'),
-    fontWeight: '600',
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  title: {
+    flex: 1,
+    fontSize: wp('4.7%'),
+    fontWeight: '800',
     color: '#111827',
   },
-  location: {
-    color: '#6B7280',
-    fontSize: wp('3.5%'),
-    marginTop: hp('0.3%'),
+  removeBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FEF2F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: wp('2%'),
   },
-  priceRow: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: hp('1%'),
   },
-  newPrice: {
-    fontSize: wp('4%'),
-    fontWeight: '700',
-    color: '#111827',
-  },
-  oldPrice: {
-    fontSize: wp('3.5%'),
-    color: '#9CA3AF',
-    textDecorationLine: 'line-through',
+  location: {
     marginLeft: wp('1%'),
+    flex: 1,
+    fontSize: wp('3.5%'),
+    color: '#6B7280',
   },
-  ratingContainer: {
+  bottomRow: {
+    marginTop: hp('1.4%'),
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 'auto',
+    justifyContent: 'space-between',
   },
-  ratingText: {
-    fontSize: wp('3.5%'),
-    fontWeight: '600',
+  price: {
+    fontSize: wp('4.8%'),
+    fontWeight: '900',
+    color: '#0B5FFF',
+  },
+  priceSub: {
+    fontSize: wp('3.2%'),
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  typeBadge: {
+    backgroundColor: '#EEF4FF',
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.6%'),
+    borderRadius: 999,
+  },
+  typeText: {
+    color: '#0B5FFF',
+    fontWeight: '800',
+    fontSize: wp('3.1%'),
+  },
+  emptyList: {
+    flex: 1,
+  },
+  emptyBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: wp('8%'),
+  },
+  emptyTitle: {
+    marginTop: hp('2%'),
+    fontSize: wp('5%'),
+    fontWeight: '900',
     color: '#111827',
-    marginLeft: wp('0.5%'),
+  },
+  emptyText: {
+    marginTop: hp('1%'),
+    color: '#6B7280',
+    fontSize: wp('3.6%'),
+    textAlign: 'center',
+    lineHeight: 21,
   },
 });

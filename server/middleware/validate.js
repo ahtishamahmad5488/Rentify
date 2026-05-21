@@ -71,6 +71,13 @@ export const createPropertyValidator = [
     .withMessage('Invalid property type'),
   body('totalRooms').optional().isInt({ min: 1 }).withMessage('Total rooms must be at least 1'),
   body('availableRooms').optional().isInt({ min: 0 }).withMessage('Available rooms cannot be negative'),
+  body('ownerPhone').trim().notEmpty().withMessage('Phone number is required'),
+  body('ownerCnic')
+    .trim()
+    .notEmpty()
+    .withMessage('CNIC is required')
+    .matches(/^\d{13}$|^\d{5}-\d{7}-\d{1}$/)
+    .withMessage('CNIC must be 13 digits or in format XXXXX-XXXXXXX-X'),
   handleValidationErrors,
 ];
 

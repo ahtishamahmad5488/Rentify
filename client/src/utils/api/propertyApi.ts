@@ -7,23 +7,25 @@ export interface PropertyImage {
 
 export interface Property {
   _id: string;
-  name: string;
+  title: string;
   description: string;
   city: string;
   area: string;
-  fullAddress: string;
-  pricePerMonth: number;
-  roomType: 'Shared' | 'Private';
+  address: string;
+  price: number;
+  propertyType: 'Shared' | 'Private' | 'Apartment' | 'House' | 'Room';
   totalRooms: number;
   availableRooms: number;
-  genderType: 'Male' | 'Female' | 'Co-Ed';
+  genderType: 'Male' | 'Female' | 'Co-Ed' | 'Any';
   facilities: string[];
   images: PropertyImage[];
   views: number;
   status: string;
-  availabilityStatus: string;
+  isAvailable: boolean;
+  latitude?: number;
+  longitude?: number;
   location?: { type: 'Point'; coordinates: [number, number] }; // [lng, lat]
-  owner?: { _id: string; name?: string; email?: string };
+  owner?: { _id: string; name?: string; email?: string; phone?: string };
   createdAt: string;
 }
 
@@ -32,7 +34,7 @@ export interface PropertyQuery {
   city?: string;
   minPrice?: number;
   maxPrice?: number;
-  roomType?: 'Shared' | 'Private';
+  propertyType?: string;
   facilities?: string[];
   lat?: number;
   lng?: number;
@@ -54,4 +56,13 @@ export const fetchProperties = async (q: PropertyQuery = {}) => {
 export const fetchPropertyById = async (id: string) => {
   const res = await axiosInstance.get(`/properties/${id}`);
   return res.data?.data as Property;
+};
+
+export const incrementPropertyView = async (id: string) => {
+  await axiosInstance.patch(`/properties/${id}/view`);
+};
+
+export const getMyProperties = async () => {
+  const res = await axiosInstance.get('/landlord/properties');
+  return res.data;
 };

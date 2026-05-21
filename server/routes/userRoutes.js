@@ -2,9 +2,11 @@ import express from 'express';
 import {
   signup, login,
   forgotPassword, verifyOTP, resetPassword,
+  getProfile, updateProfile,
 } from '../controllers/userController.js';
 import { protect, isUser } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -23,5 +25,9 @@ router.get('/dashboard', protect, isUser, (req, res) => {
     user: req.user,
   });
 });
+
+// Profile — works for both 'user' and 'landlord' roles (no isUser check)
+router.get('/profile', protect, getProfile);
+router.patch('/profile', protect, upload.single('profileImage'), updateProfile);
 
 export default router;

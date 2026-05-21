@@ -6,6 +6,7 @@ import {
   User,
   History,
   MessageCircleMore,
+  Bot,
 } from 'lucide-react-native';
 import {
   widthPercentageToDP as wp,
@@ -23,6 +24,7 @@ export type BottomTabParamList = {
   Home: undefined;
   Favorite: undefined;
   Chats: undefined;
+  AI: undefined;
   History: undefined;
   Profile: undefined;
 };
@@ -36,6 +38,7 @@ const iconMap: Record<
   Home,
   Favorite: Heart,
   Chats: MessageCircleMore,
+  AI: Bot,
   History: History,
   Profile: User,
 };
@@ -46,7 +49,7 @@ export default function BottomNavigationScreen() {
       screenOptions={({ route }) => ({
         headerShown: true,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#1C689B',
+        tabBarActiveTintColor: '#0B5FFF',
         tabBarInactiveTintColor: '#595656',
 
         tabBarIcon: ({ color, size }: { color: string; size: number }) => {
@@ -54,7 +57,7 @@ export default function BottomNavigationScreen() {
           return <Icon color={color} size={size} />;
         },
         tabBarLabelStyle: {
-          fontSize: wp('3%'),
+          fontSize: wp('2.6%'),
           fontWeight: '600',
           marginTop: hp('0.2%'),
         },
@@ -64,7 +67,7 @@ export default function BottomNavigationScreen() {
           borderTopColor: '#e0e0e0',
           height: hp('8%'),
           paddingTop: hp('0.5%'),
-          paddingHorizontal: wp('2%'),
+          paddingHorizontal: wp('1%'),
         },
       })}
     >
@@ -83,6 +86,11 @@ export default function BottomNavigationScreen() {
         component={ChatScreen}
         options={{ headerShown: false }}
       />
+      {/* <Tab.Screen
+        name="AI"
+        component={ChatBotScreen}
+        options={{ headerShown: false, tabBarLabel: 'AI' }}
+      /> */}
       <Tab.Screen
         name="History"
         component={HistoryScreen}

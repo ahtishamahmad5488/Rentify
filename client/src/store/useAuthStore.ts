@@ -7,7 +7,9 @@ export interface AuthUser {
   name: string;
   email: string;
   role?: string;
-  firebaseUid?: string; // populated after Firebase login
+  firebaseUid?: string;
+  phone?: string | null;
+  profileImage?: { public_id: string; secure_url: string } | null;
 }
 
 interface AuthState {

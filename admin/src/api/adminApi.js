@@ -20,6 +20,9 @@ export const getLandlords = (params) => API.get('/landlords', { params });
 export const updateLandlordStatus = (id, action) =>
   API.patch(`/landlords/${id}/status`, { action });
 
+// ─── Users ────────────────────────────────────────────────────────────────────
+export const getUsers = (params) => API.get('/users', { params });
+
 // ─── Bookings & Payments (root /api, not /api/auth/admin) ────────────────────
 const rootBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/auth/admin')
   .replace('/auth/admin', '');

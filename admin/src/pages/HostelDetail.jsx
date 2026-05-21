@@ -66,10 +66,10 @@ export default function PropertyDetail() {
   const extraCount = Math.max(0, images.length - 4);
 
   const ownerInfo = [
-    { label: 'Full Name', value: owner.name || '—' },
-    { label: 'Email Address', value: owner.email || '—' },
-    { label: 'Phone Number', value: owner.phone || '—' },
-    { label: 'CNIC Number', value: owner.cnic || '—', hasToggle: true },
+    { label: 'Full Name',      value: owner.name  || property.ownerName  || 'Not provided' },
+    { label: 'Email Address',  value: owner.email || property.ownerEmail || 'Not provided' },
+    { label: 'Phone Number',   value: owner.phone || property.ownerPhone || 'Not provided' },
+    { label: 'CNIC Number',    value: owner.cnic  || property.ownerCnic  || 'Not provided', hasToggle: true },
   ];
 
   const facilities = (property.facilities || []).map((f) => {

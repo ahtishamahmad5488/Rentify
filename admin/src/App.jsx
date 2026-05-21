@@ -8,6 +8,7 @@ import Landlords from './pages/Landlords';
 import Bookings from './pages/Bookings';
 import Payments from './pages/Payments';
 import PropertyDetail from './pages/HostelDetail';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/properties" element={<ProtectedRoute><PropertyListings /></ProtectedRoute>} />
           <Route path="/landlords" element={<ProtectedRoute><Landlords /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
           <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
           <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
         </Routes>

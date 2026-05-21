@@ -1,7 +1,10 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Landlord from '../models/Landlord.js';
 import { sendWelcomeEmail, sendOTPEmail } from '../config/nodemailer.js';
+import { getCloudinary } from '../config/cloudinary.js';
+import { uploadToCloudinary } from '../utils/cloudinaryUpload.js';
 
 const generateOTP = () => crypto.randomInt(100000, 999999).toString();
 
@@ -164,6 +167,53 @@ export const resetPassword = async (req, res, next) => {
     user.otpAttempts = 0;
     await user.save({ validateModifiedOnly: true });
     res.status(200).json({ success: true, message: 'Password reset successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── @desc    Get Profile ─────────────────────────────────────────────────────
+// @route   GET /api/auth/user/profile
+// @access  Private
+export const getProfile = async (req, res, next) => {
+  try {
+    const Model = req.user.role === 'landlord' ? Landlord : User;
+    const doc = await Model.findById(req.user.id).select('-password -otp -otpExpiry -otpAttempts');
+    if (!doc) return res.status(404).json({ success: false, message: 'Account not found' });
+    res.status(200).json({ success: true, user: doc.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── @desc    Update Profile ──────────────────────────────────────────────────
+// @route   PATCH /api/auth/user/profile
+// @access  Private
+export const updateProfile = async (req, res, next) => {
+  try {
+    const Model = req.user.role === 'landlord' ? Landlord : User;
+    const doc = await Model.findById(req.user.id);
+    if (!doc) return res.status(404).json({ success: false, message: 'Account not found' });
+
+    const { name, phone } = req.body;
+    if (name && name.trim()) doc.name = name.trim();
+    if (phone !== undefined) doc.phone = phone.trim() || null;
+
+    if (req.file) {
+      if (doc.profileImage?.public_id) {
+        await getCloudinary().uploader.destroy(doc.profileImage.public_id).catch(() => {});
+      }
+      const result = await uploadToCloudinary(req.file.buffer, 'rentify-profiles');
+      doc.profileImage = { public_id: result.public_id, secure_url: result.secure_url };
+    }
+
+    await doc.save({ validateModifiedOnly: true });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: doc.toJSON(),
+    });
   } catch (error) {
     next(error);
   }

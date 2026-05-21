@@ -18,7 +18,7 @@ import {
 } from 'react-native-responsive-screen';
 import { ArrowLeft } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { verifyOTP, forgotPassword } from '../../utils/api/authApi';
+import { verifyOTP, resendOtp } from '../../utils/api/authApi';
 import { showToast } from '../../utils/toastUtils';
 
 export default function OtpVerifyResetScreen() {
@@ -40,38 +40,60 @@ export default function OtpVerifyResetScreen() {
     if (!val && idx > 0) inputs.current[idx - 1]?.focus();
   };
 
-  // const handleVerify = async () => {
-  //   const code = otp.join('');
-  //   if (code.length < 6) {
-  //     showToast('error', 'Incomplete', 'Enter the full 6-digit OTP.');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     await verifyOTP(email, code);
-  //     navigation.navigate('create-password', { email, otp: code });
-  //   } catch (err: any) {
-  //     showToast(
-  //       'error',
-  //       'Invalid OTP',
-  //       err?.response?.data?.message || err.message,
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const handleVerify = async () => {
+    const code = otp.join('');
+    if (code.length < 6) {
+      showToast('error', 'Incomplete', 'Enter the full 6-digit OTP.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await verifyOTP(email, code);
+      navigation.navigate('create-password', { email, otp: code });
+    } catch (err: any) {
+      showToast(
+        'error',
+        'Invalid OTP',
+        err?.response?.data?.message || err.message,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // const handleResend = async () => {
-  //   setResending(true);
-  //   try {
-  //     await forgotPassword(email);
-  //     showToast('success', 'Resent', 'A new OTP has been sent.');
-  //   } catch {
-  //     showToast('error', 'Failed', 'Could not resend OTP.');
-  //   } finally {
-  //     setResending(false);
-  //   }
-  // };
+  const handleResend = async () => {
+    if (!email) {
+      showToast(
+        'error',
+        'Error',
+        'Email not found. Please go back and try again.',
+      );
+      return;
+    }
+
+    setResending(true);
+
+    try {
+      const response = await resendOtp(email.trim().toLowerCase());
+
+      showToast(
+        'success',
+        'OTP Sent',
+        response?.message || 'A new OTP has been sent to your email.',
+      );
+
+      setOtp(['', '', '', '', '', '']);
+      inputs.current[0]?.focus();
+    } catch (err: any) {
+      showToast(
+        'error',
+        'Failed',
+        err?.response?.data?.message || err?.message || 'Could not resend OTP.',
+      );
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -104,8 +126,7 @@ export default function OtpVerifyResetScreen() {
 
       <TouchableOpacity
         style={[styles.btn, loading && { opacity: 0.6 }]}
-        // onPress={handleVerify}
-        onPress={() => navigation.navigate('create-password')}
+        onPress={handleVerify}
         disabled={loading}
       >
         {loading ? (
@@ -116,7 +137,7 @@ export default function OtpVerifyResetScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        // onPress={handleResend}
+        onPress={handleResend}
         disabled={resending}
         style={{ marginTop: hp('3%') }}
       >

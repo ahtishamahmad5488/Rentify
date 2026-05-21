@@ -1,24 +1,29 @@
-// @ts-nocheck
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import { useNavigation } from '@react-navigation/native';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
 import { login as loginApi } from '../../utils/api/authApi';
 import { useAuthStore } from '../../store/useAuthStore';
 import { showToast } from '../../utils/toastUtils';
-import googleLogo from '../../assets/images/icons/google.png';
-import appleLogo from '../../assets/images/icons/apple.png';
+import { getApiError } from '../../utils/helpers';
+
+const PRIMARY = '#0B5FFF';
+const NAVY = '#061A4D';
+const BG = '#F6F8FC';
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
@@ -26,189 +31,224 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // const handleLogin = async () => {
-  //   if (!email.trim() || !password) {
-  //     showToast('error', 'Missing fields', 'Enter email and password.');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     const res = await loginApi(email.trim().toLowerCase(), password);
-  //     setUser(res.user, res.token);
-  //     navigation.replace('drawer-navigation');
-  //   } catch (err: any) {
-  //     showToast('error', 'Login failed', err?.response?.data?.message || err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const handleLogin = async () => {
+    const trimEmail = email.trim().toLowerCase();
+    if (!trimEmail || !password) {
+      showToast(
+        'error',
+        'Missing fields',
+        'Please enter your email and password.',
+      );
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await loginApi(trimEmail, password);
+      setUser(res.user, res.token);
+    } catch (err: any) {
+      showToast('error', 'Login failed', getApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.firstSection}>
-        <Text style={styles.headerText}>Welcome Back</Text>
-        <View style={styles.headerUnderline} />
-        <Text style={styles.subtitleText}>
-          Sign in to find your perfect rental property.
-        </Text>
-
-        <View style={styles.socialLoginContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Text style={styles.socialButtonText}>Login with </Text>
-            <Image source={googleLogo} style={styles.logoStyle} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Text style={styles.socialButtonText}>Login with </Text>
-            <Image source={appleLogo} style={styles.logoStyle} />
-          </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Brand Header */}
+        <View style={styles.brandRow}>
+          <View style={styles.brandDot} />
+          <Text style={styles.brandName}>Rentify</Text>
         </View>
 
-        <View style={styles.orSection}>
-          <View style={styles.orLine} />
-          <Text style={styles.orText}>Or sign in with email</Text>
-          <View style={styles.orLine} />
-        </View>
+        <Text style={styles.heading}>Welcome back</Text>
+        <Text style={styles.sub}>Sign in to find your perfect rental</Text>
 
-        <View style={styles.formSection}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="you@example.com"
-            placeholderTextColor="#aaa"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
+        {/* Card */}
+        <View style={styles.card}>
+          {/* Email */}
+          <Text style={styles.label}>Email address</Text>
+          <View style={styles.inputRow}>
+            <Mail size={18} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="you@example.com"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
 
-          <Text style={[styles.label, { marginTop: hp('2%') }]}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor="#aaa"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+          {/* Password */}
+          <Text style={[styles.label, { marginTop: hp('2.2%') }]}>
+            Password
+          </Text>
+          <View style={styles.inputRow}>
+            <Lock size={18} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="••••••••"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showPw}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPw(v => !v)}
+              style={styles.eyeBtn}
+            >
+              {showPw ? (
+                <EyeOff size={18} color="#9CA3AF" />
+              ) : (
+                <Eye size={18} color="#9CA3AF" />
+              )}
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
-            style={{ alignSelf: 'flex-end', marginTop: hp('1%') }}
+            style={styles.forgotRow}
             onPress={() => navigation.navigate('forgot-password')}
           >
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
-        </View>
-      </View>
 
-      <View style={styles.secondSection}>
-        <TouchableOpacity
-          style={[styles.loginBtn, loading && { opacity: 0.6 }]}
-          // onPress={handleLogin}
-          onPress={() => navigation.navigate('drawer-navigation')}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginBtnText}>Login</Text>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.loginPrompt}>
-          <Text style={styles.loginPromptText}>Don't have an account?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('signup')}>
-            <Text style={styles.loginLinkText}> Sign up</Text>
+          {/* Login Button */}
+          <TouchableOpacity
+            style={[styles.btn, loading && styles.btnDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.btnText}>Sign In</Text>
+            )}
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
+
+        {/* Sign up link */}
+        <View style={styles.signupRow}>
+          <Text style={styles.signupPrompt}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('signup')}>
+            <Text style={styles.signupLink}>Create one</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: wp('6%'), backgroundColor: 'white' },
-  firstSection: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  secondSection: {
-    flex: 0.4,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: hp('10%'),
+  flex: { flex: 1, backgroundColor: BG },
+  container: {
+    flexGrow: 1,
+    paddingHorizontal: wp('6%'),
+    paddingTop: hp('8%'),
+    paddingBottom: hp('6%'),
   },
-  headerText: { fontSize: wp('7%'), fontWeight: '700', color: '#333' },
-  headerUnderline: {
-    height: hp('0.4%'),
-    width: wp('20%'),
-    backgroundColor: '#4F46E5',
-    marginTop: hp('1%'),
-    marginBottom: hp('1.5%'),
-  },
-  subtitleText: {
-    fontSize: wp('4%'),
-    color: '#666',
-    marginBottom: hp('4%'),
-    textAlign: 'center',
-  },
-  socialLoginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    gap: wp('2%'),
-  },
-  socialButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: wp('43.5%'),
-    height: hp('6%'),
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 50,
-    gap: wp('2%'),
-  },
-  socialButtonText: { fontSize: wp('3.8%'), color: '#333' },
-  logoStyle: { width: wp('4.5%'), height: wp('4.5%'), resizeMode: 'contain' },
-  orSection: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '90%',
-    marginVertical: hp('3%'),
+    marginBottom: hp('5%'),
   },
-  orLine: { flex: 1, height: 1, backgroundColor: '#D3D3D3' },
-  orText: { marginHorizontal: wp('3%'), fontSize: wp('3.6%'), color: '#777' },
-  formSection: { width: '100%' },
-  label: {
-    fontSize: wp('3.8%'),
-    color: '#333',
+  brandDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: PRIMARY,
+    marginRight: 7,
+  },
+  brandName: {
+    fontSize: wp('5%'),
+    fontWeight: '800',
+    color: NAVY,
+    letterSpacing: 0.5,
+  },
+  heading: {
+    fontSize: wp('7.5%'),
+    fontWeight: '800',
+    color: NAVY,
     marginBottom: hp('0.8%'),
-    fontWeight: '500',
   },
-  input: {
-    height: hp('6%'),
-    borderWidth: 1,
-    borderColor: '#E6E6E6',
-    borderRadius: 8,
-    paddingHorizontal: wp('4%'),
-    fontSize: wp('4%'),
-    color: '#333',
-    backgroundColor: '#fafafa',
+  sub: {
+    fontSize: wp('3.8%'),
+    color: '#6B7280',
+    marginBottom: hp('4%'),
   },
-  forgotText: { color: '#4F46E5', fontSize: wp('3.5%'), fontWeight: '600' },
-  loginBtn: {
-    width: '100%',
-    height: hp('6.5%'),
-    backgroundColor: '#4F46E5',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: wp('5%'),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  loginBtnText: { color: '#fff', fontWeight: '700', fontSize: wp('4.2%') },
-  loginPrompt: {
+  label: {
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: hp('0.8%'),
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: hp('2.5%'),
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    paddingHorizontal: wp('3.5%'),
+    backgroundColor: '#F9FAFB',
+    height: hp('6%'),
   },
-  loginPromptText: { fontSize: wp('3.8%'), color: '#999' },
-  loginLinkText: { fontSize: wp('3.8%'), color: '#4F46E5', fontWeight: '600' },
+  inputIcon: { marginRight: 8 },
+  input: {
+    flex: 1,
+    fontSize: wp('3.8%'),
+    color: '#111827',
+  },
+  eyeBtn: { padding: 4 },
+  forgotRow: { alignSelf: 'flex-end', marginTop: hp('1.2%') },
+  forgotText: {
+    fontSize: wp('3.4%'),
+    color: PRIMARY,
+    fontWeight: '600',
+  },
+  btn: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    height: hp('6.5%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: hp('3%'),
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnDisabled: { opacity: 0.6 },
+  btnText: { color: '#fff', fontWeight: '700', fontSize: wp('4.2%') },
+  signupRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: hp('3.5%'),
+  },
+  signupPrompt: { fontSize: wp('3.8%'), color: '#6B7280' },
+  signupLink: { fontSize: wp('3.8%'), color: PRIMARY, fontWeight: '700' },
 });

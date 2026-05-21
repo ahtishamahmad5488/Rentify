@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import MapView, { Marker, MapPressEvent, PROVIDER_GOOGLE } from 'react-native-maps';
+import { MapPin } from 'lucide-react-native';
 
 interface Props {
   initialLatitude?: number;
@@ -27,6 +28,7 @@ export default function MapPicker({
     latitude: initialLatitude,
     longitude: initialLongitude,
   });
+  const [mapReady, setMapReady] = useState(false);
 
   const handlePress = (e: MapPressEvent) => {
     if (readonly) return;
@@ -37,6 +39,20 @@ export default function MapPicker({
 
   return (
     <View style={[styles.wrapper, { height }]}>
+      {/* Fallback shown when map tiles fail to load (e.g. missing API key) */}
+      {!mapReady && (
+        <View style={styles.fallback}>
+          <MapPin size={28} color="#9CA3AF" />
+          <Text style={styles.fallbackTitle}>Loading map…</Text>
+          <Text style={styles.fallbackCoords}>
+            {`${initialLatitude.toFixed(5)}, ${initialLongitude.toFixed(5)}`}
+          </Text>
+          <Text style={styles.fallbackHint}>
+            Map requires Google Maps API key in AndroidManifest.xml
+          </Text>
+        </View>
+      )}
+
       <MapView
         provider={PROVIDER_GOOGLE}
         style={StyleSheet.absoluteFill}
@@ -46,6 +62,7 @@ export default function MapPicker({
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
+        onMapReady={() => setMapReady(true)}
         onPress={handlePress}
       >
         <Marker
@@ -58,6 +75,14 @@ export default function MapPicker({
           }}
         />
       </MapView>
+
+      {/* Coordinate bar — always visible, provides location context */}
+      <View style={[styles.coordBar, !readonly && { bottom: 52 }]}>
+        <MapPin size={10} color="rgba(255,255,255,0.9)" />
+        <Text style={styles.coordText}>
+          {`${marker.latitude.toFixed(5)}, ${marker.longitude.toFixed(5)}`}
+        </Text>
+      </View>
 
       {!readonly && (
         <View style={styles.hintBar}>
@@ -81,8 +106,37 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#eee',
+    backgroundColor: '#E5E7EB',
   },
+  fallback: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+    padding: 16,
+    gap: 6,
+  },
+  fallbackTitle: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
+  fallbackCoords: { fontSize: 12, color: '#9CA3AF', fontFamily: 'monospace' },
+  fallbackHint: {
+    fontSize: 11,
+    color: '#D1D5DB',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  coordBar: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  coordText: { color: 'rgba(255,255,255,0.9)', fontSize: 11 },
   hintBar: {
     position: 'absolute',
     bottom: 8,

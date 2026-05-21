@@ -71,6 +71,12 @@ const propertySchema = new mongoose.Schema(
     isAvailable: { type: Boolean, default: true },
     views: { type: Number, default: 0, min: 0 },
 
+    // ─── Owner Contact (stored directly for mobile-created properties) ─────────
+    ownerName:  { type: String, default: '' },
+    ownerEmail: { type: String, default: '' },
+    ownerPhone: { type: String, default: '' },
+    ownerCnic:  { type: String, default: '' },
+
     // ─── Admin Approval ───────────────────────────────────────────────────────
     status: {
       type: String,

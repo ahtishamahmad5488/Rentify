@@ -22,26 +22,26 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // const handleSend = async () => {
-  //   if (!email.trim()) {
-  //     showToast('error', 'Missing', 'Enter your email address.');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     await forgotPassword(email.trim().toLowerCase());
-  //     showToast(
-  //       'success',
-  //       'OTP Sent',
-  //       'Check your email for the 6-digit code.',
-  //     );
-  //     navigation.navigate('otp-verify', { email: email.trim().toLowerCase() });
-  //   } catch (err: any) {
-  //     showToast('error', 'Error', err?.response?.data?.message || err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const handleSend = async () => {
+    if (!email.trim()) {
+      showToast('error', 'Missing', 'Enter your email address.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await forgotPassword(email.trim().toLowerCase());
+      showToast(
+        'success',
+        'OTP Sent',
+        'Check your email for the 6-digit code.',
+      );
+      navigation.navigate('otp-verify', { email: email.trim().toLowerCase() });
+    } catch (err: any) {
+      showToast('error', 'Error', err?.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -68,8 +68,8 @@ export default function ForgotPasswordScreen() {
 
       <TouchableOpacity
         style={[styles.btn, loading && { opacity: 0.6 }]}
-        // onPress={handleSend}
-        onPress={() => navigation.navigate('otp-verify')}
+        onPress={handleSend}
+        // onPress={() => navigation.navigate('otp-verify')}
         disabled={loading}
       >
         {loading ? (

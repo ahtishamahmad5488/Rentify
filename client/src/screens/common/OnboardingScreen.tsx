@@ -4,7 +4,6 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  Text,
   Image,
 } from 'react-native';
 import {
@@ -44,9 +43,9 @@ const slides = [
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slidesRef = useRef(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
-  const viewableItemsChanged = useRef(({ viewableItems }) => {
+  const viewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
     setCurrentIndex(viewableItems[0].index);
   }).current;
 

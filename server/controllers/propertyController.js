@@ -1,5 +1,6 @@
 import Property from '../models/Property.js';
 import Landlord from '../models/Landlord.js';
+import User from '../models/User.js';
 import { getCloudinary } from '../config/cloudinary.js';
 import { uploadToCloudinary } from '../utils/cloudinaryUpload.js';
 import { sendPropertySubmittedEmail } from '../config/nodemailer.js';
@@ -33,6 +34,7 @@ export const createProperty = async (req, res, next) => {
       price, propertyType, genderType, facilities,
       totalRooms, availableRooms,
       latitude, longitude,
+      ownerPhone, ownerCnic,
     } = req.body;
 
     let parsedFacilities = facilities || [];
@@ -63,6 +65,10 @@ export const createProperty = async (req, res, next) => {
       }
     }
 
+    // Resolve owner name + email for storage (works for both User and Landlord roles)
+    const OwnerModel = req.user.role === 'landlord' ? Landlord : User;
+    const ownerDoc = await OwnerModel.findById(req.user.id).select('name email').catch(() => null);
+
     const property = await Property.create({
       owner: req.user.id,
       title, description, city, area, address,
@@ -74,24 +80,31 @@ export const createProperty = async (req, res, next) => {
       longitude: lng,
       isAvailable: true,
       status: 'PENDING',
+      ownerName:  ownerDoc?.name  || '',
+      ownerEmail: ownerDoc?.email || '',
+      ownerPhone: ownerPhone || '',
+      ownerCnic:  ownerCnic  || '',
       ...(location && { location }),
     });
 
     // Notify owner + admin (non-blocking)
-    Landlord.findById(req.user.id).select('name email').then((owner) => {
-      if (owner) {
-        sendPropertySubmittedEmail(owner.email, owner.name, property.title).catch(() => {});
+    const notifyOwner = async () => {
+      try {
+        const name  = ownerDoc?.name  || 'A user';
+        const email = ownerDoc?.email;
+        if (email) sendPropertySubmittedEmail(email, name, property.title).catch(() => {});
         try {
           getIO().to('admin_room').emit('new_notification', {
             type: 'NEW_PROPERTY',
             title: 'New Property Submission',
-            message: `"${property.title}" submitted by ${owner.name}`,
+            message: `"${property.title}" submitted by ${name}`,
             propertyId: property._id,
             createdAt: new Date(),
           });
         } catch { /* socket not ready */ }
-      }
-    }).catch(() => {});
+      } catch { /* non-blocking */ }
+    };
+    notifyOwner();
 
     res.status(201).json({
       success: true,

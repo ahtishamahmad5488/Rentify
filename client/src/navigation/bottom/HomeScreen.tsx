@@ -1,688 +1,992 @@
-// @ts-nocheck
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   Modal,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import Slider from '../../components/Slider';
+import { useNavigation } from '@react-navigation/native';
 import {
-  Heart,
-  MapPin,
   Search,
   SlidersHorizontal,
+  MapPin,
   X,
+  Heart,
+  Building2,
+  Home,
+  BedDouble,
+  Users,
+  Sparkles,
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import Geolocation from '@react-native-community/geolocation';
 import {
   fetchProperties,
   Property,
   PropertyQuery,
 } from '../../utils/api/propertyApi';
+import { resolveImageUrl, formatPrice } from '../../utils/helpers';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useFavoriteStore } from '../../store/useFavoriteStore';
+import { useActivityStore, ViewedEntry } from '../../store/useActivityStore';
 
-const FACILITY_OPTIONS = [
-  'WiFi',
-  'AC',
-  'Furniture',
-  'Parking',
-  'Laundry',
-  'Kitchen',
+const PRIMARY = '#0B5FFF';
+const NAVY = '#061A4D';
+const BG = '#F6F8FC';
+
+const PROPERTY_TYPES = [
+  { key: '', label: 'All', icon: Building2 },
+  { key: 'Apartment', label: 'Apartment', icon: Building2 },
+  { key: 'House', label: 'House', icon: Home },
+  { key: 'Room', label: 'Room', icon: BedDouble },
+  { key: 'Shared', label: 'Shared', icon: Users },
 ];
-const RADIUS_OPTIONS = [2, 5, 10];
 
-// export default function HomeScreen() {
-//   const navigation = useNavigation<any>();
+const CITIES = [
+  '',
+  'Lahore',
+  'Karachi',
+  'Islamabad',
+  'Rawalpindi',
+  'Multan',
+  'Faisalabad',
+  'Peshawar',
+];
 
-//   const [query, setQuery] = useState('');
-//   const [filters, setFilters] = useState<PropertyQuery>({});
-//   const [properties, setProperties] = useState<Property[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [refreshing, setRefreshing] = useState(false);
-//   const [showFilters, setShowFilters] = useState(false);
-//   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-//     null,
-//   );
+function scoreProperty(property: Property, views: ViewedEntry[]): number {
+  if (!views.length) return 0;
+  let score = 0;
+  const cityMap: Record<string, number> = {};
+  const areaMap: Record<string, number> = {};
+  const typeMap: Record<string, number> = {};
+  const prices: number[] = [];
+  const facilSet = new Set<string>();
 
-//   const DUMMY_PROPERTIES = [
-//     {
-//       _id: '1',
-//       name: 'Luxury Studio Apartment',
-//       area: 'DHA Phase 6',
-//       city: 'Karachi',
-//       pricePerMonth: 45000,
-//       images: [
-//         {
-//           secure_url:
-//             'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
-//         },
-//       ],
-//     },
-//     {
-//       _id: '2',
-//       name: 'Modern Shared Room',
-//       area: 'Gulshan-e-Iqbal',
-//       city: 'Karachi',
-//       pricePerMonth: 18000,
-//       images: [
-//         {
-//           secure_url:
-//             'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85',
-//         },
-//       ],
-//     },
-//     {
-//       _id: '3',
-//       name: 'Family House Portion',
-//       area: 'Clifton Block 5',
-//       city: 'Karachi',
-//       pricePerMonth: 60000,
-//       images: [
-//         {
-//           secure_url:
-//             'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
-//         },
-//       ],
-//     },
-//   ];
+  for (const v of views) {
+    if (v.city) cityMap[v.city] = (cityMap[v.city] || 0) + 1;
+    if (v.area) areaMap[v.area] = (areaMap[v.area] || 0) + 1;
+    if (v.propertyType) typeMap[v.propertyType] = (typeMap[v.propertyType] || 0) + 1;
+    if (v.price > 0) prices.push(v.price);
+    for (const f of v.facilities) facilSet.add(f);
+  }
 
-//   // Capture user location once for radius search.
-//   useEffect(() => {
-//     Geolocation.getCurrentPosition(
-//       pos => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-//       () => {},
-//       { enableHighAccuracy: false, timeout: 8000 },
-//     );
-//   }, []);
+  const topCity = Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topType = Object.entries(typeMap).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const avgPrice = prices.length ? prices.reduce((s, n) => s + n, 0) / prices.length : 0;
 
-//   // const load = useCallback(async () => {
-//   //   try {
-//   //     const merged: PropertyQuery = { ...filters, q: query || undefined };
-//   //     if (filters.radiusKm && coords) {
-//   //       merged.lat = coords.lat;
-//   //       merged.lng = coords.lng;
-//   //     }
-//   //     const res = await fetchProperties(merged);
-//   //     setProperties(res || []);
-//   //   } catch (e) {
-//   //     setProperties([]);
-//   //   } finally {
-//   //     setLoading(false);
-//   //     setRefreshing(false);
-//   //   }
-//   // }, [filters, query, coords]);
+  if (topCity && property.city === topCity) score += 30;
+  if (property.area && areaMap[property.area]) score += 20;
+  if (topType && property.propertyType === topType) score += 20;
+  if (avgPrice > 0 && property.price) {
+    const pct = Math.abs(property.price - avgPrice) / avgPrice;
+    score += pct < 0.2 ? 20 : pct < 0.5 ? 10 : 0;
+  }
+  const overlap = (property.facilities || []).filter(f => facilSet.has(f)).length;
+  score += Math.min(overlap * 5, 15);
+  return score;
+}
 
-//   // useEffect(() => {
-//   //   load();
-//   // }, [load]);
-
-//   const load = useCallback(async () => {
-//     try {
-//       setLoading(true);
-
-//       // ❌ API DISABLED (demo mode)
-//       // const res = await fetchProperties(merged);
-//       // setProperties(res || []);
-
-//       // ✅ STATIC DATA FOR DEMO
-//       setTimeout(() => {
-//         setProperties(DUMMY_PROPERTIES as any);
-//         setLoading(false);
-//         setRefreshing(false);
-//       }, 500);
-//     } catch (e) {
-//       setProperties(DUMMY_PROPERTIES as any);
-//       setLoading(false);
-//       setRefreshing(false);
-//     }
-//   }, []);
-
-//   const renderRoom = ({ item }: { item: Property }) => (
-//     <TouchableOpacity
-//       activeOpacity={0.85}
-//       style={styles.card}
-//       onPress={() =>
-//         navigation.navigate('room-details', { propertyId: item._id })
-//       }
-//     >
-//       <View style={styles.imageContainer}>
-//         {item.images?.[0]?.secure_url ? (
-//           <Image
-//             source={{ uri: item.images[0].secure_url }}
-//             style={styles.image}
-//           />
-//         ) : (
-//           <View style={[styles.image, { backgroundColor: '#eee' }]} />
-//         )}
-//         <TouchableOpacity style={styles.heartIcon}>
-//           <Heart color="#6B7280" size={wp('5%')} />
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.cardContent}>
-//         <Text style={styles.roomName} numberOfLines={1}>
-//           {item.name}
-//         </Text>
-//         <View style={styles.locRow}>
-//           <MapPin size={11} color="#6B7280" />
-//           <Text style={styles.location} numberOfLines={1}>
-//             {' '}
-//             {item.area}, {item.city}
-//           </Text>
-//         </View>
-//         <Text style={styles.newPrice}>
-//           Rs. {item.pricePerMonth?.toLocaleString()}
-//           <Text style={styles.priceUnit}> /mo</Text>
-//         </Text>
-//       </View>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       <Slider />
-
-//       {/* Search Bar */}
-//       <View style={styles.searchRow}>
-//         <View style={styles.searchBox}>
-//           <Search size={18} color="#777" />
-//           <TextInput
-//             style={styles.searchInput}
-//             placeholder="Search properties..."
-//             placeholderTextColor={'#000000'}
-//             value={query}
-//             onChangeText={setQuery}
-//             // onSubmitEditing={load}
-//             returnKeyType="search"
-//           />
-//         </View>
-//         <TouchableOpacity
-//           style={styles.filterBtn}
-//           onPress={() => setShowFilters(true)}
-//         >
-//           <SlidersHorizontal size={18} color="#fff" />
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.headerRow}>
-//         <Text style={styles.title}>
-//           {filters.radiusKm
-//             ? `Within ${filters.radiusKm} km`
-//             : 'Latest Properties'}
-//         </Text>
-//       </View>
-
-//       {loading ? (
-//         <ActivityIndicator
-//           size="large"
-//           color="#4F46E5"
-//           style={{ marginTop: 32 }}
-//         />
-//       ) : (
-//         <FlatList
-//           data={properties}
-//           renderItem={renderRoom}
-//           keyExtractor={item => item._id}
-//           numColumns={2}
-//           columnWrapperStyle={styles.row}
-//           showsVerticalScrollIndicator={false}
-//           refreshControl={
-//             <RefreshControl
-//               refreshing={refreshing}
-//               onRefresh={() => {
-//                 setRefreshing(true);
-//                 load();
-//               }}
-//             />
-//           }
-//           ListEmptyComponent={() => (
-//             <Text style={{ textAlign: 'center', color: '#777', marginTop: 40 }}>
-//               No properties found.
-//             </Text>
-//           )}
-//         />
-//       )}
-
-//       {/* ─── Filter Modal ──────────────────────────────────── */}
-//       <Modal
-//         visible={showFilters}
-//         animationType="slide"
-//         transparent
-//         onRequestClose={() => setShowFilters(false)}
-//       >
-//         <View style={styles.modalBackdrop}>
-//           <View style={styles.modalCard}>
-//             <View style={styles.modalHeader}>
-//               <Text style={styles.modalTitle}>Filters</Text>
-//               <TouchableOpacity onPress={() => setShowFilters(false)}>
-//                 <X size={22} color="#000" />
-//               </TouchableOpacity>
-//             </View>
-
-//             <Text style={styles.label}>Radius from your location</Text>
-//             <View style={styles.chipRow}>
-//               {RADIUS_OPTIONS.map(r => (
-//                 <TouchableOpacity
-//                   key={r}
-//                   style={[
-//                     styles.chip,
-//                     filters.radiusKm === r && styles.chipActive,
-//                   ]}
-//                   onPress={() =>
-//                     setFilters(f => ({
-//                       ...f,
-//                       radiusKm: f.radiusKm === r ? undefined : r,
-//                     }))
-//                   }
-//                 >
-//                   <Text
-//                     style={[
-//                       styles.chipText,
-//                       filters.radiusKm === r && styles.chipTextActive,
-//                     ]}
-//                   >
-//                     {r} km
-//                   </Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-
-//             <Text style={styles.label}>Price (PKR)</Text>
-//             <View style={{ flexDirection: 'row' }}>
-//               <TextInput
-//                 style={[styles.input, { flex: 1, marginRight: 6 }]}
-//                 placeholder="Min"
-//                 keyboardType="numeric"
-//                 value={filters.minPrice?.toString() || ''}
-//                 onChangeText={t =>
-//                   setFilters(f => ({
-//                     ...f,
-//                     minPrice: t ? Number(t) : undefined,
-//                   }))
-//                 }
-//               />
-//               <TextInput
-//                 style={[styles.input, { flex: 1 }]}
-//                 placeholder="Max"
-//                 keyboardType="numeric"
-//                 value={filters.maxPrice?.toString() || ''}
-//                 onChangeText={t =>
-//                   setFilters(f => ({
-//                     ...f,
-//                     maxPrice: t ? Number(t) : undefined,
-//                   }))
-//                 }
-//               />
-//             </View>
-
-//             <Text style={styles.label}>Room Type</Text>
-//             <View style={styles.chipRow}>
-//               {(['Private', 'Shared'] as const).map(t => (
-//                 <TouchableOpacity
-//                   key={t}
-//                   style={[
-//                     styles.chip,
-//                     filters.roomType === t && styles.chipActive,
-//                   ]}
-//                   onPress={() =>
-//                     setFilters(f => ({
-//                       ...f,
-//                       roomType: f.roomType === t ? undefined : t,
-//                     }))
-//                   }
-//                 >
-//                   <Text
-//                     style={[
-//                       styles.chipText,
-//                       filters.roomType === t && styles.chipTextActive,
-//                     ]}
-//                   >
-//                     {t}
-//                   </Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-
-//             <Text style={styles.label}>Facilities</Text>
-//             <View style={styles.chipRow}>
-//               {FACILITY_OPTIONS.map(f => {
-//                 const active = filters.facilities?.includes(f);
-//                 return (
-//                   <TouchableOpacity
-//                     key={f}
-//                     style={[styles.chip, active && styles.chipActive]}
-//                     onPress={() =>
-//                       setFilters(cur => {
-//                         const list = cur.facilities || [];
-//                         return {
-//                           ...cur,
-//                           facilities: list.includes(f)
-//                             ? list.filter(x => x !== f)
-//                             : [...list, f],
-//                         };
-//                       })
-//                     }
-//                   >
-//                     <Text
-//                       style={[styles.chipText, active && styles.chipTextActive]}
-//                     >
-//                       {f}
-//                     </Text>
-//                   </TouchableOpacity>
-//                 );
-//               })}
-//             </View>
-
-//             <View style={{ flexDirection: 'row', marginTop: 18 }}>
-//               <TouchableOpacity
-//                 style={[
-//                   styles.modalBtn,
-//                   { backgroundColor: '#eee', marginRight: 6 },
-//                 ]}
-//                 onPress={() => {
-//                   setFilters({});
-//                 }}
-//               >
-//                 <Text style={{ color: '#333', fontWeight: '600' }}>Reset</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity
-//                 style={[styles.modalBtn, { backgroundColor: '#4F46E5' }]}
-//                 onPress={() => setShowFilters(false)}
-//               >
-//                 <Text style={{ color: '#fff', fontWeight: '700' }}>Apply</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         </View>
-//       </Modal>
-//     </View>
-//   );
-// }
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const user = useAuthStore(s => s.user);
+  const recentViews = useActivityStore(s => s.recentViews);
 
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<PropertyQuery>({});
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [pendingCity, setPendingCity] = useState('');
+  const [pendingMin, setPendingMin] = useState('');
+  const [pendingMax, setPendingMax] = useState('');
 
-  const DUMMY_PROPERTIES: Property[] = [
-    {
-      _id: '1',
-      name: 'Luxury Studio Apartment',
-      area: 'DHA Phase 6',
-      city: 'Lahore',
-      pricePerMonth: 45000,
-      images: [
-        {
-          secure_url:
-            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688',
-        },
-      ],
-    },
-    {
-      _id: '2',
-      name: 'Modern Shared Room',
-      area: 'Gulshan-e-Iqbal',
-      city: 'Karachi',
-      pricePerMonth: 18000,
-      images: [
-        {
-          secure_url:
-            'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85',
-        },
-      ],
-    },
-    {
-      _id: '3',
-      name: 'Family House Portion',
-      area: 'Township, Main Market',
-      city: 'Lahore',
-      pricePerMonth: 60000,
-      images: [
-        {
-          secure_url:
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c',
-        },
-      ],
-    },
-  ];
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load static data only
-  const load = useCallback(async () => {
-    setLoading(true);
+  const recommendations = useMemo(() => {
+    if (!recentViews.length || !properties.length) return [];
+    return properties
+      .map(p => ({ p, score: scoreProperty(p, recentViews) }))
+      .filter(({ score }) => score >= 20)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ p }) => p);
+  }, [properties, recentViews]);
 
-    setTimeout(() => {
-      setProperties(DUMMY_PROPERTIES);
-      setLoading(false);
-      setRefreshing(false);
-    }, 400);
-  }, []);
+  const load = useCallback(
+    async (overrideQuery?: Partial<PropertyQuery>) => {
+      try {
+        setError('');
+        const params: PropertyQuery = {
+          limit: 20,
+          ...(query && { q: query }),
+          ...(selectedType && { propertyType: selectedType }),
+          ...(selectedCity && { city: selectedCity }),
+          ...(minPrice && { minPrice: Number(minPrice) }),
+          ...(maxPrice && { maxPrice: Number(maxPrice) }),
+          ...overrideQuery,
+        };
+        const res = await fetchProperties(params);
+        setProperties(res || []);
+      } catch (e: any) {
+        setError('Failed to load properties. Pull to refresh.');
+        setProperties([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [query, selectedType, selectedCity, minPrice, maxPrice],
+  );
 
   useEffect(() => {
+    setLoading(true);
     load();
-  }, [load]);
+  }, [selectedType, selectedCity]);
 
-  const renderRoom = ({ item }: { item: Property }) => (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      style={styles.card}
+  // Debounce search
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => load(), 500);
+    return () => {
+      if (searchTimer.current) clearTimeout(searchTimer.current);
+    };
+  }, [query]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    load();
+  };
+
+  const applyFilters = () => {
+    setSelectedCity(pendingCity);
+    setMinPrice(pendingMin);
+    setMaxPrice(pendingMax);
+    setShowFilters(false);
+    setLoading(true);
+    // load will fire via useEffect when selectedCity changes
+  };
+
+  const resetFilters = () => {
+    setPendingCity('');
+    setPendingMin('');
+    setPendingMax('');
+    setSelectedCity('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedType('');
+    setShowFilters(false);
+  };
+
+  const activeFilterCount = [
+    selectedCity,
+    selectedType,
+    minPrice,
+    maxPrice,
+  ].filter(Boolean).length;
+
+  const renderCard = ({ item }: { item: Property }) => (
+    <PropertyCard
+      property={item}
       onPress={() =>
-        navigation.navigate('room-details', {
-          property: item, // ✅ PASS FULL OBJECT
-        })
+        navigation.navigate('room-details', { propertyId: item._id })
       }
-    >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: item.images?.[0]?.secure_url }}
-          style={styles.image}
-        />
-
-        <TouchableOpacity style={styles.heartIcon}>
-          <Heart color="#6B7280" size={wp('5%')} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.cardContent}>
-        <Text style={styles.roomName} numberOfLines={1}>
-          {item.name}
-        </Text>
-
-        <View style={styles.locRow}>
-          <MapPin size={11} color="#6B7280" />
-          <Text style={styles.location}>
-            {item.area}, {item.city}
-          </Text>
-        </View>
-
-        <Text style={styles.newPrice}>
-          Rs. {item.pricePerMonth.toLocaleString()}
-          <Text style={styles.priceUnit}> /mo</Text>
-        </Text>
-      </View>
-    </TouchableOpacity>
+    />
   );
 
   return (
     <View style={styles.container}>
-      <Slider />
-
-      {/* Search */}
-      <View style={styles.searchRow}>
-        <View style={styles.searchBox}>
-          <Search size={18} color="#777" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search properties..."
-            value={query}
-            onChangeText={setQuery}
-            placeholderTextColor={'#000'}
-          />
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>
+            Hello, {user?.name?.split(' ')[0] || 'there'} 👋
+          </Text>
+          <Text style={styles.headerTitle}>Find your perfect stay</Text>
         </View>
       </View>
 
-      <Text style={styles.title}>Latest Properties</Text>
+      {/* Search Row */}
+      <View style={styles.searchRow}>
+        <View style={styles.searchBox}>
+          <Search size={18} color="#9CA3AF" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search city, area, type..."
+            placeholderTextColor="#9CA3AF"
+            value={query}
+            onChangeText={setQuery}
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <X size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.filterBtn,
+            activeFilterCount > 0 && styles.filterBtnActive,
+          ]}
+          onPress={() => {
+            setPendingCity(selectedCity);
+            setPendingMin(minPrice);
+            setPendingMax(maxPrice);
+            setShowFilters(true);
+          }}
+        >
+          <SlidersHorizontal size={18} color="#fff" />
+          {activeFilterCount > 0 && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
+      {/* Property Type Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipContent}
+      >
+        {PROPERTY_TYPES.map(({ key, label }) => {
+          const active = selectedType === key;
+          return (
+            <TouchableOpacity
+              key={key}
+              style={[styles.typeChip, active && styles.typeChipActive]}
+              onPress={() => {
+                setSelectedType(key);
+                setLoading(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.typeChipText,
+                  active && styles.typeChipTextActive,
+                ]}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* AI Recommendations */}
+      {recommendations.length > 0 && (
+        <View style={styles.aiSection}>
+          <View style={styles.aiHeader}>
+            <Sparkles size={wp('4%')} color={PRIMARY} />
+            <Text style={styles.aiTitle}>AI Picks for You</Text>
+          </View>
+          <FlatList
+            data={recommendations}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => `rec-${item._id}`}
+            contentContainerStyle={styles.aiList}
+            renderItem={({ item }) => (
+              <RecommendCard
+                property={item}
+                onPress={() =>
+                  navigation.navigate('room-details', { propertyId: item._id })
+                }
+              />
+            )}
+          />
+        </View>
+      )}
+
+      {/* Section Header */}
+      <View style={styles.sectionRow}>
+        <Text style={styles.sectionTitle}>
+          {selectedType
+            ? `${selectedType}s`
+            : selectedCity
+            ? `In ${selectedCity}`
+            : 'Latest Properties'}
+        </Text>
+        {!loading && (
+          <Text style={styles.sectionCount}>{properties.length} found</Text>
+        )}
+      </View>
+
+      {/* Content */}
       {loading ? (
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={PRIMARY} />
+          <Text style={styles.loadingText}>Finding properties...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryBtn}
+            onPress={() => {
+              setLoading(true);
+              load();
+            }}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : properties.length === 0 ? (
+        <View style={styles.center}>
+          <Building2 size={48} color="#D1D5DB" />
+          <Text style={styles.emptyTitle}>No properties found</Text>
+          <Text style={styles.emptyText}>
+            Try adjusting your search or filters
+          </Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={resetFilters}>
+            <Text style={styles.retryText}>Clear filters</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
-          data={properties} // ✅ FIXED HERE
-          renderItem={renderRoom}
+          data={properties}
+          renderItem={renderCard}
           keyExtractor={item => item._id}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={load} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[PRIMARY]}
+            />
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilters}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Filters</Text>
+              <TouchableOpacity onPress={() => setShowFilters(false)}>
+                <X size={22} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.filterLabel}>City</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: hp('1%') }}
+            >
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {CITIES.map(c => (
+                  <TouchableOpacity
+                    key={c || 'all'}
+                    style={[
+                      styles.chip,
+                      pendingCity === c && styles.chipActive,
+                    ]}
+                    onPress={() => setPendingCity(c)}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        pendingCity === c && styles.chipTextActive,
+                      ]}
+                    >
+                      {c || 'All cities'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            <Text style={styles.filterLabel}>Price range (PKR / month)</Text>
+            <View style={styles.priceRow}>
+              <TextInput
+                style={[styles.priceInput, { marginRight: 8 }]}
+                placeholder="Min (e.g. 10000)"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={pendingMin}
+                onChangeText={setPendingMin}
+              />
+              <TextInput
+                style={styles.priceInput}
+                placeholder="Max (e.g. 80000)"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+                value={pendingMax}
+                onChangeText={setPendingMax}
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.resetBtn} onPress={resetFilters}>
+                <Text style={styles.resetText}>Reset all</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.applyBtn} onPress={applyFilters}>
+                <Text style={styles.applyText}>Apply filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
+// ─── Property Card Component ──────────────────────────────────────────────────
+// function PropertyCard({
+//   property,
+//   onPress,
+// }: {
+//   property: Property;
+//   onPress: () => void;
+// }) {
+//   const scaleAnim = useRef(new Animated.Value(1)).current;
+//   const imageUrl = resolveImageUrl(property.images);
+//   const toggleFavorite = useFavoriteStore(state => state.toggleFavorite);
+//   const isFavorite = useFavoriteStore(state => state.isFavorite);
+//   const isFav = isFavorite(property._id);
+
+//   const onPressIn = () =>
+//     Animated.spring(scaleAnim, {
+//       toValue: 0.97,
+//       useNativeDriver: true,
+//       friction: 8,
+//     }).start();
+//   const onPressOut = () =>
+//     Animated.spring(scaleAnim, {
+//       toValue: 1,
+//       useNativeDriver: true,
+//       friction: 8,
+//     }).start();
+
+//   return (
+//     <TouchableOpacity
+//       activeOpacity={1}
+//       onPress={onPress}
+//       onPressIn={onPressIn}
+//       onPressOut={onPressOut}
+//     >
+//       <Animated.View
+//         style={[styles.card, { transform: [{ scale: scaleAnim }] }]}
+//       >
+//         {/* Image */}
+//         <View style={styles.cardImageBox}>
+//           {imageUrl ? (
+//             <Image source={{ uri: imageUrl }} style={styles.cardImage} />
+//           ) : (
+//             <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
+//               <Building2 size={28} color="#D1D5DB" />
+//             </View>
+//           )}
+//           {/* Badge */}
+//           <View style={styles.typeBadge}>
+//             <Text style={styles.typeBadgeText}>{property.propertyType}</Text>
+//           </View>
+//           {/* Heart */}
+//           <TouchableOpacity
+//             style={styles.heartBtn}
+//             onPress={() => toggleFavorite(property)}
+//             activeOpacity={0.8}
+//           >
+//             <Heart
+//               size={15}
+//               color={isFav ? '#EF4444' : '#6B7280'}
+//               fill={isFav ? '#EF4444' : 'transparent'}
+//             />
+//           </TouchableOpacity>
+//         </View>
+
+//         {/* Info */}
+//         <View style={styles.cardBody}>
+//           <Text style={styles.cardTitle} numberOfLines={1}>
+//             {property.title}
+//           </Text>
+//           <View style={styles.locRow}>
+//             <MapPin size={10} color="#9CA3AF" />
+//             <Text style={styles.locText} numberOfLines={1}>
+//               {' '}
+//               {property.area ? `${property.area}, ` : ''}
+//               {property.city}
+//             </Text>
+//           </View>
+//           <Text style={styles.cardPrice}>
+//             {formatPrice(property.price)}
+//             <Text style={styles.pricePer}>/mo</Text>
+//           </Text>
+//         </View>
+//       </Animated.View>
+//     </TouchableOpacity>
+//   );
+// }
+function PropertyCard({
+  property,
+  onPress,
+}: {
+  property: Property;
+  onPress: () => void;
+}) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const imageUrl = resolveImageUrl(property.images);
+
+  const favorites = useFavoriteStore(state => state.favorites);
+  const toggleFavorite = useFavoriteStore(state => state.toggleFavorite);
+  const isFav = favorites.some(item => item._id === property._id);
+
+  const onPressIn = () =>
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      friction: 8,
+    }).start();
+
+  const onPressOut = () =>
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 8,
+    }).start();
+
+  return (
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+    >
+      <Animated.View
+        style={[styles.card, { transform: [{ scale: scaleAnim }] }]}
+      >
+        <View style={styles.cardImageBox}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.cardImage} />
+          ) : (
+            <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
+              <Building2 size={28} color="#D1D5DB" />
+            </View>
+          )}
+
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeBadgeText}>
+              {property.propertyType || 'Property'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.heartBtn}
+            onPress={() => toggleFavorite(property)}
+            activeOpacity={0.8}
+          >
+            <Heart
+              size={15}
+              color={isFav ? '#0b14bf' : '#6B7280'}
+              fill={isFav ? '#0b14bf' : 'transparent'}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.cardBody}>
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {property.title}
+          </Text>
+
+          <View style={styles.locRow}>
+            <MapPin size={10} color="#9CA3AF" />
+            <Text style={styles.locText} numberOfLines={1}>
+              {' '}
+              {property.area ? `${property.area}, ` : ''}
+              {property.city}
+            </Text>
+          </View>
+
+          <Text style={styles.cardPrice}>
+            {formatPrice(property.price)}
+            <Text style={styles.pricePer}>/mo</Text>
+          </Text>
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
+function RecommendCard({
+  property,
+  onPress,
+}: {
+  property: Property;
+  onPress: () => void;
+}) {
+  const imageUrl = resolveImageUrl(property.images);
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+      <View style={styles.recCard}>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.recImage} />
+        ) : (
+          <View style={[styles.recImage, styles.cardImagePlaceholder]}>
+            <Building2 size={20} color="#D1D5DB" />
+          </View>
+        )}
+        <View style={styles.recAiBadge}>
+          <Sparkles size={9} color="#fff" />
+          <Text style={styles.recAiBadgeText}>AI Pick</Text>
+        </View>
+        <View style={styles.recBody}>
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {property.title}
+          </Text>
+          <View style={styles.locRow}>
+            <MapPin size={9} color="#9CA3AF" />
+            <Text style={styles.locText} numberOfLines={1}>
+              {' '}
+              {property.area ? `${property.area}, ` : ''}
+              {property.city}
+            </Text>
+          </View>
+          <Text style={styles.cardPrice}>
+            {formatPrice(property.price)}
+            <Text style={styles.pricePer}>/mo</Text>
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: BG },
+  header: {
+    paddingHorizontal: wp('4.5%'),
+    paddingTop: hp('2%'),
+    paddingBottom: hp('1%'),
     backgroundColor: '#fff',
-    paddingHorizontal: wp('4%'),
-    paddingTop: hp('1%'),
+  },
+  greeting: { fontSize: wp('3.5%'), color: '#6B7280' },
+  headerTitle: {
+    fontSize: wp('5.5%'),
+    fontWeight: '800',
+    color: NAVY,
+    marginTop: 2,
   },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: hp('1.5%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.2%'),
+    backgroundColor: '#fff',
+    gap: 10,
   },
   searchBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5FA',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginTop: 30,
+    backgroundColor: BG,
+    borderRadius: 12,
+    paddingHorizontal: wp('3.5%'),
+    height: hp('5.5%'),
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  searchInput: { flex: 1, paddingVertical: 8, marginLeft: 6 },
+  searchInput: {
+    flex: 1,
+    fontSize: wp('3.8%'),
+    color: '#111827',
+  },
   filterBtn: {
-    backgroundColor: '#4F46E5',
-    padding: 12,
-    borderRadius: 10,
-    marginLeft: 8,
-    marginTop: 30,
+    backgroundColor: PRIMARY,
+    width: hp('5.5%'),
+    height: hp('5.5%'),
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerRow: {
+  filterBtnActive: { backgroundColor: '#0A4BD9' },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#EF4444',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+  chipScroll: { backgroundColor: '#fff', maxHeight: hp('6%') },
+  chipContent: {
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('0.8%'),
+    gap: 8,
+    alignItems: 'center',
+  },
+  typeChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
+  },
+  typeChipActive: {
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
+  },
+  typeChipText: { fontSize: wp('3.2%'), color: '#6B7280', fontWeight: '600' },
+  typeChipTextActive: { color: '#fff' },
+  sectionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: hp('2%'),
-    marginBottom: hp('1%'),
+    paddingHorizontal: wp('4.5%'),
+    paddingTop: hp('1.5%'),
+    paddingBottom: hp('0.8%'),
   },
-  title: {
-    fontSize: wp('4%'),
-    fontWeight: '600',
-    color: '#0F172A',
-    marginVertical: 10,
+  sectionTitle: { fontSize: wp('4.2%'), fontWeight: '700', color: NAVY },
+  sectionCount: { fontSize: wp('3.2%'), color: '#9CA3AF' },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
   },
-  row: { justifyContent: 'space-between', marginBottom: hp('1%') },
-  card: {
-    backgroundColor: '#fff',
-    width: wp('44.8%'),
-    borderRadius: wp('3%'),
-    borderWidth: 0.5,
-    borderColor: 'lightgrey',
+  loadingText: { color: '#9CA3AF', marginTop: 12, fontSize: wp('3.5%') },
+  errorText: {
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 12,
+    fontSize: wp('3.5%'),
   },
-  imageContainer: { position: 'relative' },
-  image: {
-    width: '100%',
-    height: hp('14%'),
-    borderTopLeftRadius: wp('3%'),
-    borderTopRightRadius: wp('3%'),
-  },
-  heartIcon: {
-    position: 'absolute',
-    top: hp('1%'),
-    right: wp('2%'),
-    backgroundColor: '#fff',
-    padding: wp('1.5%'),
-    borderRadius: wp('5%'),
-  },
-  cardContent: { padding: wp('3%') },
-  roomName: { fontSize: wp('3.8%'), fontWeight: '600', color: '#111827' },
-  locRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  location: { color: '#6B7280', fontSize: wp('3.2%') },
-  newPrice: {
-    fontSize: wp('4%'),
+  emptyTitle: {
+    fontSize: wp('4.5%'),
     fontWeight: '700',
-    color: '#4F46E5',
-    marginTop: 6,
+    color: NAVY,
+    marginTop: 12,
   },
-  priceUnit: { fontSize: wp('3%'), color: '#666', fontWeight: '400' },
-  // modal
+  emptyText: { color: '#9CA3AF', marginTop: 4, fontSize: wp('3.5%') },
+  retryBtn: {
+    marginTop: 16,
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  retryText: { color: '#fff', fontWeight: '700' },
+  listContent: {
+    paddingHorizontal: wp('3%'),
+    paddingTop: hp('0.5%'),
+    paddingBottom: hp('12%'),
+  },
+  row: { justifyContent: 'space-between', marginBottom: hp('1.5%') },
+
+  // Card
+  card: {
+    width: wp('44.5%'),
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardImageBox: { position: 'relative' },
+  cardImage: { width: '100%', height: hp('15%') },
+  cardImagePlaceholder: {
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  typeBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(11,95,255,0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  typeBadgeText: { color: '#fff', fontSize: wp('2.6%'), fontWeight: '700' },
+  heartBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#fff',
+    padding: 6,
+    borderRadius: 20,
+  },
+  cardBody: { padding: wp('2.5%') },
+  cardTitle: {
+    fontSize: wp('3.6%'),
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 2,
+  },
+  locRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  locText: { fontSize: wp('3%'), color: '#9CA3AF', flex: 1 },
+  cardPrice: {
+    fontSize: wp('4%'),
+    fontWeight: '800',
+    color: PRIMARY,
+  },
+  pricePer: { fontSize: wp('2.8%'), color: '#9CA3AF', fontWeight: '400' },
+
+  // Modal
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'flex-end',
   },
   modalCard: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 20,
+    paddingBottom: hp('5%'),
+  },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700' },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 6,
-    color: '#333',
+  modalTitle: { fontSize: wp('4.5%'), fontWeight: '800', color: NAVY },
+  filterLabel: {
+    fontSize: wp('3.5%'),
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: hp('1%'),
+    marginTop: hp('1.5%'),
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap' },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginRight: 6,
-    marginBottom: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
   },
-  chipActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
-  chipText: { color: '#333', fontSize: 12 },
+  chipActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  chipText: { fontSize: wp('3.2%'), color: '#374151', fontWeight: '600' },
   chipTextActive: { color: '#fff' },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    backgroundColor: '#fafafa',
-    marginTop: 4,
-  },
-  modalBtn: {
+  priceRow: { flexDirection: 'row' },
+  priceInput: {
     flex: 1,
-    paddingVertical: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
     borderRadius: 10,
-    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F9FAFB',
+    fontSize: wp('3.5%'),
+    color: '#111827',
   },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: hp('3%'),
+  },
+  resetBtn: {
+    flex: 1,
+    height: hp('6%'),
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetText: { color: '#374151', fontWeight: '700' },
+  applyBtn: {
+    flex: 2,
+    height: hp('6%'),
+    borderRadius: 12,
+    backgroundColor: PRIMARY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyText: { color: '#fff', fontWeight: '700' },
+
+  // AI Recommendations
+  aiSection: {
+    backgroundColor: '#fff',
+    paddingTop: hp('1.5%'),
+    paddingBottom: hp('1%'),
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF2F7',
+  },
+  aiHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: wp('4.5%'),
+    gap: 6,
+    marginBottom: hp('1%'),
+  },
+  aiTitle: { fontSize: wp('4%'), fontWeight: '700', color: NAVY },
+  aiList: { paddingHorizontal: wp('4%'), gap: 10 },
+
+  // Recommend Card
+  recCard: {
+    width: wp('38%'),
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#EEF2F7',
+  },
+  recImage: { width: '100%', height: hp('12%') },
+  recAiBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  recAiBadgeText: { color: '#fff', fontSize: wp('2.4%'), fontWeight: '700' },
+  recBody: { padding: wp('2%') },
 });

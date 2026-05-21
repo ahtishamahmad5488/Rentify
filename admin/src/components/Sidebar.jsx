@@ -7,6 +7,7 @@ const navItems = [
   { icon: 'dashboard', label: 'Dashboard', to: '/' },
   { icon: 'apartment', label: 'Properties', to: '/properties' },
   { icon: 'badge', label: 'Landlords', to: '/landlords' },
+  { icon: 'group', label: 'Mobile Users', to: '/users' },
   { icon: 'calendar_month', label: 'Bookings', to: '/bookings' },
   { icon: 'payments', label: 'Payments', to: '/payments' },
 ];

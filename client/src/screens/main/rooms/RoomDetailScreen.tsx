@@ -1,226 +1,15 @@
-// import {
-//   ActivityIndicator,
-//   Image,
-//   ScrollView,
-//   StyleSheet,
-//   Text,
-//   TouchableOpacity,
-//   View,
-// } from 'react-native';
-// import React, { useEffect, useState } from 'react';
-// import {
-//   widthPercentageToDP as wp,
-//   heightPercentageToDP as hp,
-// } from 'react-native-responsive-screen';
-// import { ArrowLeft, MapPin, MessageCircle, CalendarCheck, Share2 } from 'lucide-react-native';
-// import { useNavigation, useRoute } from '@react-navigation/native';
-// import MapPicker from '../../../components/MapPicker';
-// import { fetchPropertyById, Property } from '../../../utils/api/propertyApi';
-
-// export default function RoomDetailScreen() {
-//   const navigation = useNavigation<any>();
-//   const route = useRoute<any>();
-//   const propertyId: string | undefined = route.params?.propertyId;
-
-//   const [property, setProperty] = useState<Property | null>(null);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     if (!propertyId) {
-//       setLoading(false);
-//       return;
-//     }
-//     fetchPropertyById(propertyId)
-//       .then(setProperty)
-//       .catch(() => setProperty(null))
-//       .finally(() => setLoading(false));
-//   }, [propertyId]);
-
-//   if (loading) {
-//     return (
-//       <View style={[styles.container, styles.center]}>
-//         <ActivityIndicator size="large" color="#4F46E5" />
-//       </View>
-//     );
-//   }
-
-//   if (!property) {
-//     return (
-//       <View style={[styles.container, styles.center]}>
-//         <Text>Property not found</Text>
-//         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 12 }}>
-//           <Text style={{ color: '#4F46E5' }}>Go back</Text>
-//         </TouchableOpacity>
-//       </View>
-//     );
-//   }
-
-//   const lat = property.location?.coordinates?.[1];
-//   const lng = property.location?.coordinates?.[0];
-//   const cover = property.images?.[0]?.secure_url;
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()}>
-//           <ArrowLeft size={wp('6%')} color="#000" />
-//         </TouchableOpacity>
-//         <Text style={styles.title}>Property Details</Text>
-//         <TouchableOpacity>
-//           <Share2 size={wp('5.2%')} color="#000" />
-//         </TouchableOpacity>
-//       </View>
-
-//       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-//         {cover ? (
-//           <Image source={{ uri: cover }} style={styles.cover} />
-//         ) : (
-//           <View style={[styles.cover, { backgroundColor: '#eee' }]} />
-//         )}
-
-//         <View style={{ padding: 16 }}>
-//           <Text style={styles.name}>{property.name}</Text>
-//           <View style={styles.locRow}>
-//             <MapPin size={14} color="#666" />
-//             <Text style={styles.location}>
-//               {property.area}, {property.city}
-//             </Text>
-//           </View>
-
-//           <Text style={styles.price}>
-//             Rs. {property.pricePerMonth.toLocaleString()}
-//             <Text style={styles.priceUnit}> / month</Text>
-//           </Text>
-
-//           <Text style={styles.section}>About this property</Text>
-//           <Text style={styles.desc}>{property.description}</Text>
-
-//           <Text style={styles.section}>Details</Text>
-//           <View style={styles.metaRow}>
-//             <Meta label="Room Type" value={property.roomType} />
-//             <Meta label="Gender" value={property.genderType} />
-//             <Meta label="Available" value={`${property.availableRooms}/${property.totalRooms}`} />
-//           </View>
-
-//           {property.facilities?.length > 0 && (
-//             <>
-//               <Text style={styles.section}>Facilities</Text>
-//               <View style={styles.chipRow}>
-//                 {property.facilities.map((f) => (
-//                   <View key={f} style={styles.chip}>
-//                     <Text style={styles.chipText}>{f}</Text>
-//                   </View>
-//                 ))}
-//               </View>
-//             </>
-//           )}
-
-//           {lat && lng && (
-//             <>
-//               <Text style={styles.section}>Location</Text>
-//               <MapPicker
-//                 initialLatitude={lat}
-//                 initialLongitude={lng}
-//                 onLocationSelected={() => {}}
-//                 readonly
-//                 height={200}
-//               />
-//             </>
-//           )}
-//         </View>
-//       </ScrollView>
-
-//       <View style={styles.footer}>
-//         <TouchableOpacity
-//           style={[styles.btn, styles.chatBtn]}
-//           onPress={() =>
-//             navigation.navigate('chat-details', {
-//               peerId: property.owner?._id,
-//               peerName: property.owner?.name || 'Owner',
-//               propertyId: property._id,
-//             })
-//           }
-//         >
-//           <MessageCircle size={18} color="#4F46E5" />
-//           <Text style={[styles.btnText, { color: '#4F46E5' }]}>Chat</Text>
-//         </TouchableOpacity>
-
-//         <TouchableOpacity
-//           style={[styles.btn, styles.bookBtn]}
-//           onPress={() => navigation.navigate('booking', { property })}
-//         >
-//           <CalendarCheck size={18} color="#fff" />
-//           <Text style={[styles.btnText, { color: '#fff' }]}>Book Now</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-// }
-
-// const Meta = ({ label, value }: { label: string; value: string }) => (
-//   <View style={styles.metaCell}>
-//     <Text style={styles.metaLabel}>{label}</Text>
-//     <Text style={styles.metaValue}>{value}</Text>
-//   </View>
-// );
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: 'white', paddingTop: hp('5%') },
-//   center: { justifyContent: 'center', alignItems: 'center' },
-//   header: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     paddingHorizontal: wp('4%'),
-//     paddingBottom: hp('1.2%'),
-//     paddingTop: hp('2%'),
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#eee',
-//   },
-//   title: { fontSize: wp('4.2%'), fontWeight: '600', color: '#000' },
-//   cover: { width: '100%', height: hp('30%') },
-//   name: { fontSize: 20, fontWeight: '700' },
-//   locRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-//   location: { color: '#666', marginLeft: 4 },
-//   price: { fontSize: 22, fontWeight: '700', color: '#4F46E5', marginTop: 12 },
-//   priceUnit: { fontSize: 13, color: '#666', fontWeight: '400' },
-//   section: { fontSize: 15, fontWeight: '700', marginTop: 18, marginBottom: 8 },
-//   desc: { color: '#444', lineHeight: 20 },
-//   metaRow: { flexDirection: 'row', justifyContent: 'space-between' },
-//   metaCell: {
-//     flex: 1, backgroundColor: '#F5F5FA', padding: 10, marginRight: 6, borderRadius: 8,
-//   },
-//   metaLabel: { fontSize: 11, color: '#666' },
-//   metaValue: { fontSize: 13, fontWeight: '600', color: '#222', marginTop: 2 },
-//   chipRow: { flexDirection: 'row', flexWrap: 'wrap' },
-//   chip: {
-//     backgroundColor: '#EEF0FF', paddingHorizontal: 10, paddingVertical: 5,
-//     borderRadius: 14, marginRight: 6, marginBottom: 6,
-//   },
-//   chipText: { fontSize: 12, color: '#4F46E5' },
-//   footer: {
-//     position: 'absolute', left: 0, right: 0, bottom: 0,
-//     flexDirection: 'row', padding: 12, borderTopWidth: 1, borderTopColor: '#eee',
-//     backgroundColor: '#fff',
-//   },
-//   btn: {
-//     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-//     paddingVertical: 14, borderRadius: 10, marginHorizontal: 6,
-//   },
-//   chatBtn: { borderWidth: 1, borderColor: '#4F46E5' },
-//   bookBtn: { backgroundColor: '#4F46E5' },
-//   btnText: { fontWeight: '700', marginLeft: 6 },
-// });
-// @ts-nocheck
+import React, {useCallback, useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  FlatList,
+  Dimensions,
 } from 'react-native';
-import React from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -231,235 +20,513 @@ import {
   MessageCircle,
   CalendarCheck,
   Share2,
+  Wifi,
+  Zap,
+  Car,
+  UtensilsCrossed,
+  Wind,
+  ShieldCheck,
+  Sofa,
+  WashingMachine,
+  Trees,
 } from 'lucide-react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import MapPicker from '../../../components/MapPicker';
+import {
+  fetchPropertyById,
+  incrementPropertyView,
+  Property,
+} from '../../../utils/api/propertyApi';
+import {
+  formatPrice,
+  parseCoordinates,
+  propertyTypeLabel,
+  resolveAllImages,
+} from '../../../utils/helpers';
+import { useActivityStore } from '../../../store/useActivityStore';
+
+const PRIMARY = '#0B5FFF';
+const NAVY = '#061A4D';
+const {width: SCREEN_W} = Dimensions.get('window');
+
+const FACILITY_ICON_MAP: Record<string, any> = {
+  WiFi: Wifi,
+  AC: Wind,
+  Parking: Car,
+  Kitchen: UtensilsCrossed,
+  Laundry: WashingMachine,
+  Security: ShieldCheck,
+  Furnished: Sofa,
+  'Electricity Backup': Zap,
+  Balcony: Trees,
+};
 
 export default function RoomDetailScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  // ✅ FULL PROPERTY RECEIVED FROM HOME SCREEN
-  const property = route.params?.property;
+  const propertyId: string | undefined = route.params?.propertyId;
 
-  // ❌ API COMPLETELY DISABLED (commented for safety)
-  /*
-  useEffect(() => {
-    if (!propertyId) return;
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [imageIndex, setImageIndex] = useState(0);
 
-    fetchPropertyById(propertyId)
-      .then(setProperty)
-      .catch(() => setProperty(null))
-      .finally(() => setLoading(false));
+  const recordView = useActivityStore(s => s.recordView);
+
+  const load = useCallback(async () => {
+    if (!propertyId) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const data = await fetchPropertyById(propertyId);
+      setProperty(data);
+      recordView(data);
+      // Fire-and-forget view increment
+      incrementPropertyView(propertyId).catch(() => {});
+    } catch {
+      setProperty(null);
+    } finally {
+      setLoading(false);
+    }
   }, [propertyId]);
-  */
 
-  // ✅ Safety check
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={PRIMARY} />
+        <Text style={styles.loadingText}>Loading property...</Text>
+      </View>
+    );
+  }
+
   if (!property) {
     return (
       <View style={[styles.container, styles.center]}>
-        <Text>Property not found</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={{ color: '#4F46E5', marginTop: 10 }}>Go back</Text>
+        <Text style={styles.errorTitle}>Property not found</Text>
+        <TouchableOpacity
+          style={styles.goBackBtn}
+          onPress={() => navigation.goBack()}>
+          <Text style={styles.goBackText}>Go back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const cover = property.images?.[0]?.secure_url;
+  const images = resolveAllImages(property.images);
+  const coords = parseCoordinates(property);
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ArrowLeft size={wp('6%')} color="#000" />
-        </TouchableOpacity>
+      {/* Image Gallery */}
+      <View style={styles.gallery}>
+        <FlatList
+          data={images.length > 0 ? images : [null]}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, i) => String(i)}
+          onMomentumScrollEnd={e => {
+            const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+            setImageIndex(idx);
+          }}
+          renderItem={({item}) =>
+            item ? (
+              <Image source={{uri: item}} style={styles.galleryImage} />
+            ) : (
+              <View style={[styles.galleryImage, styles.imagePlaceholder]} />
+            )
+          }
+        />
 
-        <Text style={styles.title}>Property Details</Text>
+        {/* Top overlay */}
+        <View style={styles.galleryOverlay}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => navigation.goBack()}>
+            <ArrowLeft size={20} color="#111827" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Share2 size={20} color="#111827" />
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity>
-          <Share2 size={wp('5.2%')} color="#000" />
-        </TouchableOpacity>
+        {/* Image dots */}
+        {images.length > 1 && (
+          <View style={styles.imageDots}>
+            {images.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.dot, i === imageIndex && styles.dotActive]}
+              />
+            ))}
+          </View>
+        )}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* IMAGE */}
-        {cover ? (
-          <Image source={{ uri: cover }} style={styles.cover} />
-        ) : (
-          <View style={[styles.cover, { backgroundColor: '#eee' }]} />
-        )}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
 
-        <View style={{ padding: 16 }}>
-          <Text style={styles.name}>{property.name}</Text>
-
-          <View style={styles.locRow}>
-            <MapPin size={14} color="#666" />
-            <Text style={styles.location}>
-              {property.area}, {property.city}
-            </Text>
+        {/* Title & Price */}
+        <View style={styles.titleRow}>
+          <View style={{flex: 1}}>
+            <Text style={styles.propertyTitle}>{property.title}</Text>
+            <View style={styles.locRow}>
+              <MapPin size={13} color="#9CA3AF" />
+              <Text style={styles.locText}>
+                {property.area ? `${property.area}, ` : ''}
+                {property.city}
+              </Text>
+            </View>
           </View>
-
-          <Text style={styles.price}>
-            Rs. {property.pricePerMonth?.toLocaleString()}
-            <Text style={styles.priceUnit}> / month</Text>
-          </Text>
-
-          {/* ABOUT */}
-          <Text style={styles.section}>About this property</Text>
-          <Text style={styles.desc}>
-            {property.description || 'No description available'}
-          </Text>
-
-          {/* DETAILS */}
-          <Text style={styles.section}>Details</Text>
-
-          <View style={styles.metaRow}>
-            <Meta label="Room Type" value={property.roomType || 'N/A'} />
-            <Meta label="Gender" value={property.genderType || 'N/A'} />
-            <Meta
-              label="Available"
-              value={`${property.availableRooms || 0}/${
-                property.totalRooms || 0
-              }`}
-            />
+          <View style={styles.priceBadge}>
+            <Text style={styles.priceValue}>{formatPrice(property.price)}</Text>
+            <Text style={styles.perMonth}>/month</Text>
           </View>
+        </View>
 
-          {/* FACILITIES */}
-          {property.facilities?.length > 0 && (
-            <>
-              <Text style={styles.section}>Facilities</Text>
-              <View style={styles.chipRow}>
-                {property.facilities.map((f: string) => (
-                  <View key={f} style={styles.chip}>
-                    <Text style={styles.chipText}>{f}</Text>
-                  </View>
-                ))}
-              </View>
-            </>
-          )}
-
-          {/* MAP */}
-          {property.location?.coordinates && (
-            <>
-              <Text style={styles.section}>Location</Text>
-              <MapPicker
-                initialLatitude={property.location.coordinates[1]}
-                initialLongitude={property.location.coordinates[0]}
-                readonly
-                height={200}
-              />
-            </>
+        {/* Type badges */}
+        <View style={styles.badgeRow}>
+          <Badge label={propertyTypeLabel(property.propertyType)} color={PRIMARY} />
+          <Badge label={property.genderType || 'Any'} color="#8B5CF6" />
+          {property.isAvailable !== false && (
+            <Badge label="Available" color="#10B981" />
           )}
         </View>
+
+        {/* Details Grid */}
+        <Text style={styles.sectionTitle}>Details</Text>
+        <View style={styles.detailGrid}>
+          <DetailCell label="Total Rooms" value={String(property.totalRooms || 1)} />
+          <DetailCell
+            label="Available"
+            value={`${property.availableRooms ?? 0} rooms`}
+          />
+          <DetailCell label="Gender" value={property.genderType || 'Any'} />
+          <DetailCell label="Status" value={property.status || 'APPROVED'} />
+        </View>
+
+        {/* Description */}
+        {property.description ? (
+          <>
+            <Text style={styles.sectionTitle}>About this property</Text>
+            <Text style={styles.desc}>{property.description}</Text>
+          </>
+        ) : null}
+
+        {/* Facilities */}
+        {property.facilities?.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Facilities</Text>
+            <View style={styles.facilitiesGrid}>
+              {property.facilities.map(f => {
+                const Icon = FACILITY_ICON_MAP[f];
+                return (
+                  <View key={f} style={styles.facilityItem}>
+                    <View style={styles.facilityIconBox}>
+                      {Icon ? (
+                        <Icon size={18} color={PRIMARY} />
+                      ) : (
+                        <Text style={styles.facilityEmoji}>•</Text>
+                      )}
+                    </View>
+                    <Text style={styles.facilityText}>{f}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
+
+        {/* Location / Map */}
+        {coords ? (
+          <>
+            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={styles.addressText}>
+              <MapPin size={12} color="#9CA3AF" /> {property.address}
+            </Text>
+            <MapPicker
+              initialLatitude={coords.lat}
+              initialLongitude={coords.lng}
+              onLocationSelected={() => {}}
+              readonly
+              height={200}
+            />
+          </>
+        ) : property.address ? (
+          <>
+            <Text style={styles.sectionTitle}>Address</Text>
+            <Text style={styles.addressText}>{property.address}</Text>
+          </>
+        ) : null}
+
+        {/* Owner info */}
+        {property.owner?.name && (
+          <>
+            <Text style={styles.sectionTitle}>Listed by</Text>
+            <View style={styles.ownerCard}>
+              <View style={styles.ownerAvatar}>
+                <Text style={styles.ownerInitial}>
+                  {property.owner.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.ownerName}>{property.owner.name}</Text>
+                {property.owner.email && (
+                  <Text style={styles.ownerEmail}>{property.owner.email}</Text>
+                )}
+              </View>
+            </View>
+          </>
+        )}
+
+        <View style={{height: hp('12%')}} />
       </ScrollView>
 
-      {/* FOOTER */}
+      {/* Bottom CTA */}
       <View style={styles.footer}>
-        <TouchableOpacity style={[styles.btn, styles.chatBtn]}>
-          <MessageCircle size={18} color="#4F46E5" />
-          <Text style={[styles.btnText, { color: '#4F46E5' }]}>Chat</Text>
+        <TouchableOpacity
+          style={styles.chatBtn}
+          onPress={() =>
+            navigation.navigate('chat-details', {
+              peerId: property.owner?._id || 'owner',
+              peerName: property.owner?.name || 'Owner',
+              propertyId: property._id,
+            })
+          }>
+          <MessageCircle size={18} color={PRIMARY} />
+          <Text style={styles.chatBtnText}>Chat</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, styles.bookBtn]}
-          onPress={() => navigation.navigate('payment')}
-        >
+          style={styles.bookBtn}
+          onPress={() => navigation.navigate('booking', {property})}>
           <CalendarCheck size={18} color="#fff" />
-          <Text style={[styles.btnText, { color: '#fff' }]}>Book Now</Text>
+          <Text style={styles.bookBtnText}>Book Now</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-/* ---------------- UI COMPONENT ---------------- */
-const Meta = ({ label, value }: any) => (
-  <View style={styles.metaCell}>
-    <Text style={styles.metaLabel}>{label}</Text>
-    <Text style={styles.metaValue}>{value}</Text>
+const Badge = ({label, color}: {label: string; color: string}) => (
+  <View style={[styles.badge, {backgroundColor: color + '15', borderColor: color + '40'}]}>
+    <Text style={[styles.badgeText, {color}]}>{label}</Text>
   </View>
 );
 
-/* ---------------- STYLES ---------------- */
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white', paddingTop: hp('5%') },
-  center: { justifyContent: 'center', alignItems: 'center' },
+const DetailCell = ({label, value}: {label: string; value: string}) => (
+  <View style={styles.detailCell}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
-  header: {
+const styles = StyleSheet.create({
+  container: {flex: 1, backgroundColor: '#fff'},
+  center: {justifyContent: 'center', alignItems: 'center'},
+  loadingText: {color: '#9CA3AF', marginTop: 12},
+  errorTitle: {fontSize: 16, fontWeight: '700', color: NAVY},
+  goBackBtn: {
+    marginTop: 12,
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  goBackText: {color: '#fff', fontWeight: '700'},
+
+  // Gallery
+  gallery: {height: hp('35%'), position: 'relative'},
+  galleryImage: {width: SCREEN_W, height: hp('35%')},
+  imagePlaceholder: {backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center'},
+  galleryOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: wp('4%'),
+    paddingTop: hp('5.5%'),
   },
-
-  title: { fontSize: wp('4.2%'), fontWeight: '600' },
-
-  cover: { width: '100%', height: hp('30%') },
-
-  name: { fontSize: 20, fontWeight: '700' },
-
-  locRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-
-  location: { color: '#666', marginLeft: 4 },
-
-  price: { fontSize: 22, fontWeight: '700', color: '#4F46E5', marginTop: 12 },
-
-  priceUnit: { fontSize: 13, color: '#666' },
-
-  section: { fontSize: 15, fontWeight: '700', marginTop: 18 },
-
-  desc: { color: '#444', marginTop: 6 },
-
-  metaRow: { flexDirection: 'row', justifyContent: 'space-between' },
-
-  metaCell: {
-    flex: 1,
-    backgroundColor: '#F5F5FA',
-    padding: 10,
-    marginRight: 6,
-    borderRadius: 8,
+  iconBtn: {
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
+  imageDots: {
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  dot: {width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)'},
+  dotActive: {backgroundColor: '#fff', width: 18},
 
-  metaLabel: { fontSize: 11, color: '#666' },
-
-  metaValue: { fontSize: 13, fontWeight: '600' },
-
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap' },
-
-  chip: {
-    backgroundColor: '#EEF0FF',
+  // Content
+  scrollContent: {paddingHorizontal: wp('4.5%'), paddingTop: hp('2%')},
+  titleRow: {flexDirection: 'row', alignItems: 'flex-start', gap: 10},
+  propertyTitle: {
+    fontSize: wp('5%'),
+    fontWeight: '800',
+    color: NAVY,
+    lineHeight: wp('6.5%'),
+  },
+  locRow: {flexDirection: 'row', alignItems: 'center', marginTop: 4},
+  locText: {fontSize: wp('3.3%'), color: '#9CA3AF', marginLeft: 3},
+  priceBadge: {
+    backgroundColor: PRIMARY + '10',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginRight: 6,
-    marginBottom: 6,
+    paddingVertical: 6,
+    borderRadius: 10,
+    alignItems: 'flex-end',
+  },
+  priceValue: {fontSize: wp('3.8%'), fontWeight: '800', color: PRIMARY},
+  perMonth: {fontSize: wp('2.8%'), color: '#9CA3AF'},
+
+  // Badges
+  badgeRow: {flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12},
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  badgeText: {fontSize: wp('3%'), fontWeight: '700'},
+
+  // Section
+  sectionTitle: {
+    fontSize: wp('4.2%'),
+    fontWeight: '800',
+    color: NAVY,
+    marginTop: hp('2.5%'),
+    marginBottom: hp('1%'),
   },
 
-  chipText: { fontSize: 12, color: '#4F46E5' },
+  // Detail grid
+  detailGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  detailCell: {
+    flex: 1,
+    minWidth: wp('38%'),
+    backgroundColor: '#F6F8FC',
+    borderRadius: 10,
+    padding: 12,
+  },
+  detailLabel: {fontSize: wp('3%'), color: '#9CA3AF', fontWeight: '600'},
+  detailValue: {fontSize: wp('3.8%'), fontWeight: '800', color: NAVY, marginTop: 4},
 
+  // Description
+  desc: {
+    fontSize: wp('3.8%'),
+    color: '#4B5563',
+    lineHeight: wp('5.8%'),
+  },
+
+  // Facilities
+  facilitiesGrid: {flexDirection: 'row', flexWrap: 'wrap', gap: 10},
+  facilityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F6F8FC',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  facilityIconBox: {width: 24, alignItems: 'center'},
+  facilityEmoji: {fontSize: 16},
+  facilityText: {fontSize: wp('3.2%'), color: '#374151', fontWeight: '600'},
+
+  // Location
+  addressText: {
+    fontSize: wp('3.5%'),
+    color: '#6B7280',
+    marginBottom: 10,
+    lineHeight: 20,
+  },
+
+  // Owner
+  ownerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F6F8FC',
+    borderRadius: 12,
+    padding: 14,
+  },
+  ownerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: PRIMARY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ownerInitial: {color: '#fff', fontWeight: '800', fontSize: 18},
+  ownerName: {fontWeight: '700', color: NAVY, fontSize: wp('3.8%')},
+  ownerEmail: {color: '#9CA3AF', fontSize: wp('3.2%'), marginTop: 2},
+
+  // Footer
   footer: {
     position: 'absolute',
     bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    padding: 12,
+    padding: wp('4%'),
+    paddingBottom: hp('3%'),
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderColor: '#eee',
+    borderTopColor: '#F3F4F6',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -2},
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 8,
   },
-
-  btn: {
+  chatBtn: {
     flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    padding: 14,
-    borderRadius: 10,
-    marginHorizontal: 6,
+    borderWidth: 2,
+    borderColor: PRIMARY,
+    borderRadius: 12,
+    height: hp('6.5%'),
+    gap: 8,
   },
-
-  chatBtn: { borderWidth: 1, borderColor: '#4F46E5' },
-
-  bookBtn: { backgroundColor: '#4F46E5' },
-
-  btnText: { marginLeft: 6, fontWeight: '700' },
+  chatBtnText: {color: PRIMARY, fontWeight: '700', fontSize: wp('4%')},
+  bookBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    height: hp('6.5%'),
+    gap: 8,
+    shadowColor: PRIMARY,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  bookBtnText: {color: '#fff', fontWeight: '700', fontSize: wp('4%')},
 });

@@ -11,6 +11,7 @@ import landlordDashboardRoutes from "./routes/landlordDashboardRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 
 dotenv.config();
 
@@ -87,6 +88,7 @@ app.use("/api/landlord", landlordDashboardRoutes); // landlord profile, properti
 app.use("/api/properties", propertyRoutes);    // public property list/search/view
 app.use("/api/bookings", bookingRoutes);       // tenant bookings
 app.use("/api/payments", paymentRoutes);       // payment processing
+app.use("/api/ai", aiRoutes);                  // Gemini AI property assistant
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

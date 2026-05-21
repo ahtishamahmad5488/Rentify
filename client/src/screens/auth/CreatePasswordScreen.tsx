@@ -28,53 +28,53 @@ export default function CreatePasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
-  // const handleReset = async () => {
-  //   if (!newPassword || !confirm) {
-  //     showToast('error', 'Missing', 'Fill both fields.');
-  //     return;
-  //   }
-  //   if (newPassword !== confirm) {
-  //     showToast('error', 'Mismatch', 'Passwords do not match.');
-  //     return;
-  //   }
-  //   if (newPassword.length < 6) {
-  //     showToast('error', 'Too short', 'Minimum 6 characters.');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     await resetPassword(email, otp, newPassword);
-  //     setDone(true);
-  //   } catch (err: any) {
-  //     showToast('error', 'Failed', err?.response?.data?.message || err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // if (done) {
-  //   return (
-  //     <View style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
-  //       <CheckCircle2 size={72} color="#22C55E" />
-  //       <Text style={[styles.title, { marginTop: 20 }]}>Password Reset!</Text>
-  //       <Text style={styles.subtitle}>Your password has been updated successfully.</Text>
-  //       <TouchableOpacity
-  //         style={[styles.btn, { marginTop: hp('4%') }]}
-  //         onPress={() => navigation.replace('login')}
-  //       >
-  //         <Text style={styles.btnText}>Back to Login</Text>
-  //       </TouchableOpacity>
-  //     </View>
-  //   );
-  // }
-
-  const handleSetPassword = () => {
-    showToast('success', 'Done', 'Password reset successful!');
-
-    setTimeout(() => {
-      navigation.replace('login');
-    }, 1000); // 1 sec delay taake toast dikhe
+  const handleReset = async () => {
+    if (!newPassword || !confirm) {
+      showToast('error', 'Missing', 'Fill both fields.');
+      return;
+    }
+    if (newPassword !== confirm) {
+      showToast('error', 'Mismatch', 'Passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast('error', 'Too short', 'Minimum 6 characters.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetPassword(email, otp, newPassword);
+      setDone(true);
+    } catch (err: any) {
+      showToast('error', 'Failed', err?.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (done) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { alignItems: 'center', justifyContent: 'center' },
+        ]}
+      >
+        <CheckCircle2 size={72} color="#22C55E" />
+        <Text style={[styles.title, { marginTop: 20 }]}>Password Reset!</Text>
+        <Text style={styles.subtitle}>
+          Your password has been updated successfully.
+        </Text>
+        <TouchableOpacity
+          style={[styles.btn, { marginTop: hp('4%') }]}
+          onPress={() => navigation.replace('login')}
+        >
+          <Text style={styles.btnText}>Back to Login</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
@@ -109,8 +109,7 @@ export default function CreatePasswordScreen() {
 
       <TouchableOpacity
         style={[styles.btn, loading && { opacity: 0.6 }]}
-        // onPress={handleReset}
-        onPress={handleSetPassword}
+        onPress={handleReset}
         disabled={loading}
       >
         {loading ? (
@@ -158,7 +157,8 @@ const styles = StyleSheet.create({
   },
   btn: {
     marginTop: hp('4%'),
-    height: hp('6.5%'),
+    height: hp('6%'),
+    width: hp('16%'),
     backgroundColor: '#4F46E5',
     borderRadius: 10,
     alignItems: 'center',

@@ -26,7 +26,7 @@ export default function WelcomeScreen() {
         <ButtonComponent
           title="Continue"
           onPress={() => {
-            navigation.navigate('drawer-navigation');
+            navigation.navigate('onboarding');
           }}
         />
       </View>

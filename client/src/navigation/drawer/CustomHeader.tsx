@@ -7,6 +7,7 @@ import {
   MapPin,
   Menu,
   MessageCircleMore,
+  Bot,
 } from 'lucide-react-native';
 import {
   widthPercentageToDP as wp,
@@ -31,14 +32,8 @@ export default function CustomHeader({ title }: { title: string }) {
       </View>
 
       <View style={styles.rightSection}>
-        <MessageCircleMore
-          onPress={() => navigation.navigate('notication')}
-          size={hp('2.5%')}
-        />
-        <Bell
-          onPress={() => navigation.navigate('notication')}
-          size={hp('2.5%')}
-        />
+        <Bot onPress={() => navigation.navigate('AI')} size={hp('2.5%')} />
+        <Bell onPress={() => navigation.navigate('')} size={hp('2.5%')} />
       </View>
     </View>
   );
