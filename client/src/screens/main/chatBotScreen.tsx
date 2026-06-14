@@ -67,7 +67,11 @@ function PropertyChatCard({
 }) {
   const imageUrl = resolveImageUrl(property.images);
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.88} style={styles.propCard}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.88}
+      style={styles.propCard}
+    >
       {imageUrl ? (
         <Image source={{ uri: imageUrl }} style={styles.propImage} />
       ) : (
@@ -83,7 +87,9 @@ function PropertyChatCard({
         <View style={styles.propLocRow}>
           <MapPin size={10} color="#9CA3AF" />
           <Text style={styles.propLoc} numberOfLines={1}>
-            {' '}{property.area ? `${property.area}, ` : ''}{property.city}
+            {' '}
+            {property.area ? `${property.area}, ` : ''}
+            {property.city}
           </Text>
         </View>
         <Text style={styles.propPrice}>
@@ -142,10 +148,7 @@ export default function ChatBotScreen() {
         properties: properties || [],
       };
 
-      setMessages(prev => [
-        ...prev.filter(m => !m.loading),
-        aiMsg,
-      ]);
+      setMessages(prev => [...prev.filter(m => !m.loading), aiMsg]);
     } catch (err: any) {
       const errMsg: ChatMessage = {
         id: `ai-err-${Date.now()}`,
@@ -185,8 +188,18 @@ export default function ChatBotScreen() {
         )}
 
         <View style={styles.msgBlock}>
-          <View style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}>
-            <Text style={[styles.bubbleText, isUser ? styles.userText : styles.aiText]}>
+          <View
+            style={[
+              styles.bubble,
+              isUser ? styles.userBubble : styles.aiBubble,
+            ]}
+          >
+            <Text
+              style={[
+                styles.bubbleText,
+                isUser ? styles.userText : styles.aiText,
+              ]}
+            >
               {item.text}
             </Text>
           </View>
@@ -264,7 +277,10 @@ export default function ChatBotScreen() {
           blurOnSubmit={false}
         />
         <TouchableOpacity
-          style={[styles.sendBtn, (!input.trim() || aiTyping) && { opacity: 0.4 }]}
+          style={[
+            styles.sendBtn,
+            (!input.trim() || aiTyping) && { opacity: 0.4 },
+          ]}
           onPress={sendMessage}
           disabled={!input.trim() || aiTyping}
           activeOpacity={0.8}
@@ -384,7 +400,12 @@ const styles = StyleSheet.create({
   },
   propBadgeText: { color: '#fff', fontSize: wp('2.6%'), fontWeight: '700' },
   propBody: { padding: wp('3%') },
-  propTitle: { fontSize: wp('3.8%'), fontWeight: '700', color: '#111827', marginBottom: 3 },
+  propTitle: {
+    fontSize: wp('3.8%'),
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 3,
+  },
   propLocRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   propLoc: { fontSize: wp('3%'), color: '#9CA3AF', flex: 1 },
   propPrice: { fontSize: wp('4%'), fontWeight: '800', color: PRIMARY },
